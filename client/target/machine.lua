@@ -118,21 +118,26 @@ local function buildResponse(option, forServer)
   response.distance = target and target.distance or nil
   response.zone = target and target.zone and target.zone.id or nil
 
-  if forServer and response.entity then
-    response.entity = NetworkGetEntityIsNetworked(response.entity)
-      and NetworkGetNetworkIdFromEntity(response.entity) or 0
+  if forServer then
+    if response.entity then
+      response.entity = NetworkGetEntityIsNetworked(response.entity)
+        and NetworkGetNetworkIdFromEntity(response.entity) or 0
+    end
+
+    -- Strip function fields: prevent serialization errors when transmitting response to server
+    for key, value in pairs(response) do
+      if type(value) == 'function' then response[key] = nil end
+    end
   end
 
   response.icon, response.iconColor = nil, nil
   response.groups, response.gangs, response.items, response.anyItem = nil, nil, nil, nil
+  response.excludeGroups, response.excludeGangs = nil, nil
+  response.jobTypes, response.excludeJobTypes = nil, nil
   response.canInteract, response.onSelect = nil, nil
   response.export, response.event, response.serverEvent = nil, nil, nil
   response.command, response.qbCommand = nil, nil
   response.dialect, response.qb, response.qtarget = nil, nil, nil
-  response.resource, response.hideWhenIneligible = nil, nil
-  response.order, response.index, response.badges = nil, nil, nil
-  response.absoluteOffset, response.offsetSize = nil, nil
-  response.openMenu, response.menuName = nil, nil
 
   return response
 end

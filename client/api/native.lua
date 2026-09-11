@@ -129,7 +129,16 @@ function api.addEntity(netIds, options)
   for i = 1, #netIds do
     local netId = netIds[i]
     if NetworkDoesNetworkIdExist(netId) then
+      local isNew = Store.entities[netId] == nil
       Store.addKeyed(Store.entities, netId, options, DIALECT, ctx)
+
+      -- Sync entity statebag: notify server to set hasTargetOptions for ox_target watcher compatibility
+      if isNew and Store.entities[netId] then
+        local entity = NetworkGetEntityFromNetworkId(netId)
+        if entity and entity ~= 0 and not Entity(entity).state.hasTargetOptions then
+          TriggerServerEvent('ox_target:setEntityHasOptions', netId)
+        end
+      end
     end
   end
 end

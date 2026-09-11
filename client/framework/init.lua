@@ -11,6 +11,8 @@ Adapter = {
   GetGangs = function() return {} end,
   ---@return string? citizen / character identifier
   GetCitizenId = function() return nil end,
+  ---@return string? qb-target job type ('leo', 'ems', ...) for jobType gates
+  GetJobType = function() return nil end,
   ---@return number count of an item in the player's inventory, or nil if unknown
   GetItemCount = function(_name) return nil end,
   ---@return string? display label for a group name
@@ -73,6 +75,7 @@ function Bridge.InvalidatePlayerState() end
 function Bridge.GetGroups()      return Adapter.GetGroups() or {} end
 function Bridge.GetGangs()       return Adapter.GetGangs() or {} end
 function Bridge.GetCitizenId()   return Adapter.GetCitizenId() end
+function Bridge.GetJobType()     return Adapter.GetJobType() end
 function Bridge.GetGroupLabel(n) return Adapter.GetGroupLabel(n) end
 
 ---Dispatch notification: route message to active framework notification handler.

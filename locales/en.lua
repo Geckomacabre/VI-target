@@ -16,6 +16,14 @@ Locales['en'] = {
   unavailable = 'Unavailable',
   not_eligible = 'You cannot do this',
 
+  -- Built-in vehicle door labels (Config.Defaults.vehicleDoors)
+  door_front_driver = 'Front driver door',
+  door_front_passenger = 'Front passenger door',
+  door_rear_driver = 'Rear driver door',
+  door_rear_passenger = 'Rear passenger door',
+  door_hood = 'Hood',
+  door_trunk = 'Trunk',
+
   go_back = 'Back',
   no_options = 'Nothing to do here',
   toggle_targeting = 'Interact (osm-target)',

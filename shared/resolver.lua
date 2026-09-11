@@ -65,6 +65,41 @@ local function evalGroupGate(gate, owned, label, tr)
   return false, tr('requires_group', Schema.joinNames(names))
 end
 
+---Evaluate group gate match: check player membership against gate criteria without reason formatting.
+---@return boolean
+local function matchesGroup(gate, owned)
+  local entries = Schema.gateEntries(gate)
+  if #entries == 0 then return false end
+
+  owned = owned or EMPTY
+
+  for i = 1, #entries do
+    local entry = entries[i]
+    if entry.name == 'all' then return true end
+
+    local grade = owned[entry.name]
+    if grade ~= nil and (entry.value == nil or grade >= entry.value) then
+      return true
+    end
+  end
+
+  return false
+end
+
+---Evaluate job-type gate match: verify player job type against gate requirements.
+---@return boolean
+local function matchesJobType(gate, jobType)
+  if jobType == nil then return false end
+
+  local entries = Schema.gateEntries(gate)
+  for i = 1, #entries do
+    local name = entries[i].name
+    if name == 'all' or name == jobType then return true end
+  end
+
+  return false
+end
+
 ---@return boolean ok, string? reason
 local function evalItemGate(gate, anyItem, count, label, tr)
   local entries = Schema.gateEntries(gate)
@@ -151,6 +186,23 @@ function Resolver.evaluate(option, ctx, distance)
     bone = boneId
   end
 
+  -- Evaluate exclusion gates: hide option when player matches excluded groups or job types
+  if option.excludeGroups and matchesGroup(option.excludeGroups, player.groups) then
+    return Resolver.HIDDEN
+  end
+
+  if option.excludeGangs and matchesGroup(option.excludeGangs, player.gangs) then
+    return Resolver.HIDDEN
+  end
+
+  if option.jobTypes and not matchesJobType(option.jobTypes, player.jobType) then
+    return Resolver.HIDDEN
+  end
+
+  if option.excludeJobTypes and matchesJobType(option.excludeJobTypes, player.jobType) then
+    return Resolver.HIDDEN
+  end
+
   local showDisabled = policy.showDisabled ~= false
   local function gated(reason)
     if not showDisabled then return Resolver.HIDDEN end
@@ -172,6 +224,17 @@ function Resolver.evaluate(option, ctx, distance)
   local gateReason
 
   local ok, reason = evalGroupGate(option.groups, player.groups, groupLabel, tr)
+
+  -- Resolve ox group parity: verify gang or citizenid match when job evaluation fails
+  if not ok
+    and option.dialect ~= Schema.DIALECTS.qb
+    and option.dialect ~= Schema.DIALECTS.qtarget
+    and (matchesGroup(option.groups, player.gangs)
+      or Schema.gateNames(option.groups, player.citizenid))
+  then
+    ok, reason = true, nil
+  end
+
   if not ok then gateReason = reason end
 
   if not gateReason then

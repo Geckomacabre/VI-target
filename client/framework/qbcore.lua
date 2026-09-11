@@ -7,23 +7,55 @@ local function playerData()
   return QBCore.Functions.GetPlayerData()
 end
 
+---Extract group grade: parse numeric level or grade table value across framework forks.
+local function gradeOf(value)
+  local kind = type(value)
+  if kind == 'number' then return value end
+  if kind == 'table' then return tonumber(value.level or value.grade) or 0 end
+  return 0
+end
+
+---Aggregate group grades: merge secondary and primary groups keeping highest grade for gate resolution.
+local function collect(owned, primary)
+  local out = {}
+
+  if type(owned) == 'table' then
+    for name, value in pairs(owned) do
+      if type(name) == 'string' then out[name] = gradeOf(value) end
+    end
+  end
+
+  if primary and primary.name then
+    local grade = primary.grade and primary.grade.level or 0
+    if not out[primary.name] or out[primary.name] < grade then
+      out[primary.name] = grade
+    end
+  end
+
+  return out
+end
+
 function Adapter.GetGroups()
   local data = playerData()
-  local job = data and data.job
-  if not job or not job.name then return {} end
-  return { [job.name] = job.grade and job.grade.level or 0 }
+  if not data then return {} end
+  return collect(data.jobs, data.job)
 end
 
 function Adapter.GetGangs()
   local data = playerData()
-  local gang = data and data.gang
-  if not gang or not gang.name then return {} end
-  return { [gang.name] = gang.grade and gang.grade.level or 0 }
+  if not data then return {} end
+  return collect(data.gangs, data.gang)
 end
 
 function Adapter.GetCitizenId()
   local data = playerData()
   return data and data.citizenid or nil
+end
+
+function Adapter.GetJobType()
+  local data = playerData()
+  local job = data and data.job
+  return job and job.type or nil
 end
 
 ---Count inventory items: aggregate item quantity across player inventory slots.

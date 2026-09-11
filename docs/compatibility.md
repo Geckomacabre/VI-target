@@ -23,6 +23,49 @@ Dialect options are automatically parsed and translated into the unified interna
 
 ---
 
+## Custom Option Fields
+
+Custom option properties not consumed during dialect normalization are preserved and forwarded directly to callback handlers and event payloads:
+
+```lua
+exports['qb-target']:AddTargetEntity(ped, {
+    options = {
+        {
+            label = 'Open Ammunation',
+            type = 'server',
+            event = 'qb-shops:server:openShop',
+            shop = 'ammunation', -- Custom field forwarded into event payload
+        }
+    },
+    distance = 2.0,
+})
+```
+
+The server handler receives `data.shop == 'ammunation'`. Custom field forwarding applies consistently across `ox_target`, `qb-target`, and `qtarget` options for `onSelect`, `export`, and client/server events.
+
+Reserved schema properties cannot be overridden by caller custom fields, preventing misrouted events or security escapes. Function references among custom fields are automatically stripped before transmitting server event payloads.
+
+---
+
+## Gate Coverage
+
+| Legacy field | Dialect | Behaviour |
+| --- | --- | --- |
+| `job` | qb / qtarget | Job gate, grades honoured, `'all'` wildcard |
+| `gang` | qb / qtarget | Gang gate, evaluated independently of `job` |
+| `excludejob` | qb / qtarget | Hides the option for matching jobs |
+| `excludegang` | qb / qtarget | Hides the option for matching gangs |
+| `jobType` | qb / qtarget | Requires a matching job type, `'all'` wildcard |
+| `excludejobType` | qb / qtarget | Hides the option for matching job types |
+| `item` / `required_item` / `items` | qb / qtarget | Item gate with readable requirement |
+| `citizenid` | qb / qtarget | Restricts the option to named characters |
+| `groups` | ox | Satisfied by any job, any gang, or the player's own citizen id |
+| `items` / `anyItem` | ox | Item gate, `anyItem` switches all/any |
+
+On Qbox and QBCore frameworks, the `groups` gate mirrors `qbx_core.HasGroup`: secondary jobs and gangs satisfy the check alongside the active primary job. In contrast, `qb-target` and `qtarget` dialect options evaluate `job` strictly against primary job assignments.
+
+---
+
 ## Automatic Gate Resolution
 
 Legacy options declaring requirements via `job`, `gang`, `groups`, `item`, `required_item`, or `items` automatically benefit from formatted requirement messages on disabled options:
@@ -73,3 +116,8 @@ end
 1. **Mouse Aiming**: osm-target utilizes mouse wheel scrolling for option selection and does not capture NUI focus during standard targeting interactions. `EnableNUI` and `DisableNUI` calls from legacy scripts are safely handled without interfering with mouse aim.
 2. **PolyZone Shims**: `qb-target` zone creation functions return a lightweight zone shim supporting `:destroy()` and `:isPointInside(coords)`.
 3. **Vertical Bounding**: `minZ` and `maxZ` bounds are mapped to true 3D bounding boxes to ensure vertical zoning accuracy.
+4. **Circle Zones**: `AddCircleZone` creates a spherical zone volume rather than an unbounded vertical cylinder, matching `ox_target` behavior. Interactions requiring unbounded vertical reach should register as box zones.
+5. **Network Entity IDs**: Server event payloads receive `entity` as a network ID (or `0` if non-networked), providing consistent server-side entity resolution.
+6. **Entity Statebags & Relays**: Registering options on a networked entity automatically sets the `hasTargetOptions` statebag. The `ox_target:toggleEntityDoor` server event is relayed to the entity owner for compatibility with external vehicle door scripts.
+7. **Built-in Vehicle Door Options**: Optional vehicle door interactions matching `ox_target` defaults can be enabled by setting `Config.Defaults.vehicleDoors = true`.
+8. **Disabled vs Hidden Options**: Options failing job, gang, or item checks render in an explained disabled state by default. Set `Config.Options.showDisabled = false` to replicate legacy behavior where ineligible options are hidden completely.

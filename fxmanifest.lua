@@ -7,7 +7,7 @@ use_experimental_fxv2_oal 'yes'
 name 'osm-target'
 author 'OsmFX Mods'
 description 'OSM Target - world-space DUI interaction system. Drop-in replacement for ox_target / qb-target / qtarget with multiple bespoke designs, explained disabled states, and a SQL-backed in-game admin panel.'
-version '1.0.0'
+version '1.0.1'
 repository 'https://github.com/OsmFX-Mods/osm-target'
 
 ui_page 'html/index.html'
@@ -42,6 +42,7 @@ client_scripts {
   'client/target/hit.lua',
   'client/target/input.lua',
   'client/target/machine.lua',
+  'client/target/defaults.lua',
   'client/ui/nui.lua',
   'client/config_sync.lua',
   'client/debug.lua',

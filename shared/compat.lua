@@ -18,6 +18,35 @@ local function clampDistance(optionDistance, groupDistance)
   return optionDistance
 end
 
+-- Consumed dialect keys: specify reserved option properties filtered during custom field forwarding
+local CONSUMED = {
+  ox = { iconColour = true, num = true },
+  qb = {
+    iconColour = true, num = true, action = true, event = true,
+    job = true, gang = true, item = true, required_item = true,
+    excludejob = true, excludegang = true, jobType = true, excludejobType = true,
+  },
+}
+
+CONSUMED.qtarget = CONSUMED.qb
+
+---Preserve custom fields: forward unreserved caller properties into normalized option payload.
+local function carryExtras(option, v, dialect)
+  local consumed = CONSUMED[dialect] or CONSUMED.ox
+
+  for key, value in pairs(v) do
+    if type(key) == 'string'
+      and option[key] == nil
+      and not Schema.RESERVED[key]
+      and not consumed[key]
+    then
+      option[key] = value
+    end
+  end
+
+  return option
+end
+
 ---Convert options to array: flatten single options, arrays, or maps into an ordered list.
 ---@return table[]
 function Compat.toArray(options)
@@ -103,9 +132,11 @@ function Compat.fromOx(v, ctx)
     order = v.num,
     resource = ctx.resource,
     dialect = Schema.DIALECTS.ox,
+    -- Preserve qtarget flag: retain bare-entity callback signature for legacy qtarget options
+    qtarget = v.qtarget or nil,
   }
 
-  return option
+  return carryExtras(option, v, Schema.DIALECTS.ox)
 end
 
 ---Normalize qb-target option: map fields and handle qb-specific gates.
@@ -126,6 +157,12 @@ function Compat.fromQb(v, ctx)
     items = v.item or v.required_item or v.items,
     anyItem = v.anyItem,
     citizenid = v.citizenid,
+
+    -- Map qb-target exclusion gates: filter options by excluded jobs, gangs, and job types
+    excludeGroups = v.excludejob,
+    excludeGangs = v.excludegang,
+    jobTypes = v.jobType,
+    excludeJobTypes = v.excludejobType,
 
     bones = ctx.bones or v.bones,
     offset = v.offset,
@@ -159,7 +196,7 @@ function Compat.fromQb(v, ctx)
     end
   end
 
-  return option
+  return carryExtras(option, v, Schema.DIALECTS.qb)
 end
 
 ---Normalize qtarget option: map fields and handle qtarget-specific gates.
@@ -179,6 +216,12 @@ function Compat.fromQtarget(v, ctx)
     items = v.item or v.required_item or v.items,
     anyItem = v.anyItem,
     citizenid = v.citizenid,
+
+    -- Map qb-target exclusion gates: filter options by excluded jobs, gangs, and job types
+    excludeGroups = v.excludejob,
+    excludeGangs = v.excludegang,
+    jobTypes = v.jobType,
+    excludeJobTypes = v.excludejobType,
 
     bones = ctx.bones or v.bones,
     offset = v.offset,
@@ -210,7 +253,7 @@ function Compat.fromQtarget(v, ctx)
     end
   end
 
-  return option
+  return carryExtras(option, v, Schema.DIALECTS.qtarget)
 end
 
 local CONVERTERS = {

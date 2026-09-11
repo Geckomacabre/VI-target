@@ -2,7 +2,7 @@ Player = {}
 
 local TTL = 3000
 
-local groups, gangs, citizenid
+local groups, gangs, citizenid, jobType
 local itemCounts = {}
 local expiry = 0
 
@@ -10,6 +10,7 @@ local function rebuild()
   groups = Bridge.GetGroups() or {}
   gangs = Bridge.GetGangs() or {}
   citizenid = Bridge.GetCitizenId()
+  jobType = Bridge.GetJobType()
   expiry = GetGameTimer() + TTL
 end
 
@@ -40,6 +41,7 @@ function Player.state()
     groups = groups,
     gangs = gangs,
     citizenid = citizenid,
+    jobType = jobType,
     items = itemCount,
     groupLabel = Bridge.GetGroupLabel,
     itemLabel = Bridge.GetItemLabel,

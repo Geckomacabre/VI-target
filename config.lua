@@ -128,5 +128,10 @@ Config.Options = {
   focusDisabled = true,
 }
 
+-- Default vehicle interactions: register built-in vehicle door options (ox_target parity)
+Config.Defaults = {
+  vehicleDoors = false,
+}
+
 -- Default design: initial design fallback used before database sync or if selected pack is missing
 Config.Design = 'radial'

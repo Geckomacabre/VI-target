@@ -2,6 +2,27 @@ local Schema = {}
 
 Schema.DIALECTS = { ox = 'ox', qb = 'qb', qtarget = 'qtarget' }
 
+-- Reserved schema keys: protect internal option properties from caller override
+Schema.RESERVED = {
+  label = true, description = true, name = true,
+  icon = true, iconColor = true, badges = true,
+  distance = true,
+
+  groups = true, gangs = true, items = true, anyItem = true, citizenid = true,
+  excludeGroups = true, excludeGangs = true,
+  jobTypes = true, excludeJobTypes = true,
+
+  bones = true, offset = true, offsetSize = true, absoluteOffset = true,
+
+  canInteract = true, hideWhenIneligible = true,
+
+  onSelect = true, export = true, event = true, serverEvent = true,
+  command = true, qbCommand = true, openMenu = true, menuName = true,
+
+  order = true, index = true, resource = true,
+  dialect = true, qb = true, qtarget = true,
+}
+
 ---Determine table structure type: distinguish array, hash, empty, and nil.
 ---@return 'array' | 'hash' | 'empty' | 'nil'
 function Schema.tableType(t)
@@ -44,6 +65,17 @@ function Schema.gateEntries(gate)
   end
 
   return out
+end
+
+---Check gate membership: determine if gate declarations match the specified identifier.
+---@return boolean
+function Schema.gateNames(gate, value)
+  if value == nil then return false end
+  local entries = Schema.gateEntries(gate)
+  for i = 1, #entries do
+    if entries[i].name == value then return true end
+  end
+  return false
 end
 
 ---Prettify identifier: format snake_case or camelCase names into title case.

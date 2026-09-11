@@ -6,23 +6,47 @@ local function playerData()
   return ok and data or nil
 end
 
+---Aggregate group grades: merge player groups and gangs with active primary group to match qbx_core HasGroup resolution.
+local function collect(owned, primary)
+  local out = {}
+
+  if type(owned) == 'table' then
+    for name, grade in pairs(owned) do
+      if type(name) == 'string' then out[name] = tonumber(grade) or 0 end
+    end
+  end
+
+  if primary and primary.name then
+    local grade = primary.grade and primary.grade.level or 0
+    if not out[primary.name] or out[primary.name] < grade then
+      out[primary.name] = grade
+    end
+  end
+
+  return out
+end
+
 function Adapter.GetGroups()
   local data = playerData()
-  local job = data and data.job
-  if not job or not job.name then return {} end
-  return { [job.name] = job.grade and job.grade.level or 0 }
+  if not data then return {} end
+  return collect(data.jobs, data.job)
 end
 
 function Adapter.GetGangs()
   local data = playerData()
-  local gang = data and data.gang
-  if not gang or not gang.name then return {} end
-  return { [gang.name] = gang.grade and gang.grade.level or 0 }
+  if not data then return {} end
+  return collect(data.gangs, data.gang)
 end
 
 function Adapter.GetCitizenId()
   local data = playerData()
   return data and data.citizenid or nil
+end
+
+function Adapter.GetJobType()
+  local data = playerData()
+  local job = data and data.job
+  return job and job.type or nil
 end
 
 -- Item count fallback: handled via ox_inventory in init.lua

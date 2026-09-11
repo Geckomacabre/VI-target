@@ -84,3 +84,14 @@ RegisterNetEvent('ox_target:setEntityHasOptions', function(netId)
     Entity(entity).state:set('hasTargetOptions', true, true)
   end
 end)
+
+-- Relay vehicle door event: route door toggle request to network entity owner (ox_target parity)
+RegisterNetEvent('ox_target:toggleEntityDoor', function(netId, door)
+  local entity = NetworkGetEntityFromNetworkId(netId)
+  if not entity or entity == 0 or not DoesEntityExist(entity) then return end
+
+  local owner = NetworkGetEntityOwner(entity)
+  if owner and owner ~= -1 then
+    TriggerClientEvent('ox_target:toggleEntityDoor', owner, netId, door)
+  end
+end)
