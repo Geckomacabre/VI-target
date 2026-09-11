@@ -1,0 +1,39 @@
+# OS / System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.env
+
+# Node / frontend dependencies and local files
+ui/node_modules/
+ui/dist/
+ui/.env.local
+ui/.env.development.local
+ui/.env.test.local
+ui/.env.production.local
+ui/*.tsbuildinfo
+
+# Reference scripts
+reference_scripts/
+reference-scripts/
+
+# npm / yarn / pnpm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Server / Log files
+*.log
+
+# Packaging output
+dist/

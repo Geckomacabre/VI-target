@@ -1,0 +1,54 @@
+name: Release osm-target
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'ui/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ui
+        run: npm ci
+
+      - name: Build NUI host and design packs
+        working-directory: ui
+        run: npm run build:all
+
+      - name: Verify design packs
+        working-directory: ui
+        run: npm run verify
+
+      - name: Stage release bundle
+        run: |
+          mkdir -p staging/osm-target
+          cp -r fxmanifest.lua config.lua LICENSE README.md staging/osm-target/
+          cp -r client server shared locales sql html designs docs staging/osm-target/
+          cd staging
+          zip -r ../osm-target.zip osm-target
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: osm-target.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
