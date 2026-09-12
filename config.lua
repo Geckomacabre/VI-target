@@ -32,15 +32,35 @@ Config.Input = {
   -- Keybinding: default activation key for ox_lib keybind
   key = 'LMENU',
 
+  -- Controller binding for the same action, as an input-mapper parameter id
+  -- (docs.fivem.net/docs/game-references/input-mapper-parameter-ids/
+  -- pad_digitalbuttonany/). nil leaves targeting keyboard-only.
+  --
+  -- Avoid LUP_INDEX and LDOWN_INDEX: the d-pad's up and down already move the
+  -- focus through the list, via the frontend controls below. Both this and the
+  -- keyboard key are rebindable by the player in FiveM's keybind settings, and
+  -- like the keyboard key, a change here only takes effect next session --
+  -- ox_lib registers the bind once, at start.
+  padKey = 'LLEFT_INDEX',  -- D-pad left
+
   -- Interaction mode: 'hold' or 'toggle'
   mode = 'hold',
 
-  confirm = 24,   -- Left click (INPUT_ATTACK)
-  cancel = 25,    -- Right click (INPUT_AIM)
-  scrollUp = 241, -- Scroll up (INPUT_CURSOR_SCROLL_UP)
-  scrollDown = 242,
+  -- Each of these is a control id or a list of them, so the same action answers
+  -- to whichever device the player is holding. GTA gives the mouse wheel and
+  -- the pad's menu controls different ids because they are different devices,
+  -- not different intents -- Rockstar's own menus read them as one and the same
+  -- (see clothes_shop's 188/187 pair, or the car meet grouping 241 with 188).
+  confirm = { 24, 201 },      -- Left click (INPUT_ATTACK) / A-Cross (INPUT_FRONTEND_ACCEPT)
+  cancel = { 25, 194 },       -- Right click (INPUT_AIM) / B-Circle (INPUT_FRONTEND_CANCEL)
+  scrollUp = { 241, 188 },    -- Wheel up (INPUT_CURSOR_SCROLL_UP) / d-pad up (INPUT_FRONTEND_UP)
+  scrollDown = { 242, 187 },  -- Wheel down / d-pad down (INPUT_FRONTEND_DOWN)
 
-  -- Control suppression: disable weapon and vehicle cycling during interaction
+  -- Control suppression: disable weapon and vehicle cycling during interaction.
+  -- Suppressing a control does not stop this resource reading it -- the input
+  -- layer checks IsDisabledControlJustPressed too -- so the ids used above can
+  -- safely appear here, and the pad ones need to: the d-pad and A are bound to
+  -- game actions of their own that should not fire while a menu is up.
   suppress = {
     14, 15,          -- Weapon wheel next / prev
     16, 17,          -- Select next / prev weapon
@@ -49,6 +69,8 @@ Config.Input = {
     99, 100,         -- Vehicle select next / prev weapon
     115, 116,        -- Vehicle cycle weapon
     140, 141, 142,   -- Melee attacks
+    187, 188,        -- Frontend up / down (d-pad, left stick)
+    201,             -- Frontend accept (A / Cross)
     257, 263, 264,   -- Alternate attack controls
     331,             -- Vehicle radio wheel
   },
