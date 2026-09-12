@@ -1,4 +1,4 @@
-# VI-Target — GTA VI-Style World-Space Targeting (fork of osm-target)
+# osm-target (GTA VI-style fork)
 
 [![License: OsmFX Source-Available](https://img.shields.io/badge/License-Source--Available%20v1.0-orange.svg?style=for-the-badge)](LICENSE)
 
@@ -58,7 +58,7 @@ Build your own design packs with the React + TypeScript SDK — see [docs/design
 ### Proof of independent origin
 
 `Context Rail` (`designs/rail/design.lua`) was first committed to this repository on
-**2026-09-12** ([`7c81eed9`](https://github.com/Geckomacabre/VI-target/commit/7c81eed9)).
+**2026-09-12** ([`7c81eed9`](https://github.com/Geckomacabre/osm-target/commit/7c81eed9)).
 Public, dated commits predating it by up to sixteen days show this author already
 building GTA VI/RDR2-referenced interaction UI, independently of this fork and of
 OsmFX Mods' "Target VI" pack:
@@ -100,7 +100,7 @@ Targeting scripts have been a staple of FiveM roleplay for years, but traditiona
 - [oxmysql](https://github.com/overextended/oxmysql) (Optional, required for SQL-backed `/targetadmin` persistence)
 
 ### Installation
-1. Download the latest release package from the [Releases](https://github.com/Geckomacabre/VI-target/releases) page.
+1. Download the latest release package from the [Releases](https://github.com/Geckomacabre/osm-target/releases) page.
 2. Extract the `osm-target` folder into your server's `resources` directory.
 3. Ensure `ox_lib` (and `oxmysql` if used) starts before `osm-target` in your `server.cfg`:
    ```cfg
