@@ -74,6 +74,17 @@ OsmFX Mods' "Target VI" pack:
   author's private multi-resource server repository and are available on
   request; they are not linked here since that repository isn't public.
 
+OsmFX Mods' own Target VI product page
+([osmfxmods.com/product/7667144](https://www.osmfxmods.com/product/7667144))
+states that Target VI "takes its cue from the interaction style shown in
+GTA VI's Extended Look" and that "every asset in the pack was drawn for it" —
+the same public Rockstar Games trailer cited above, not a source original to
+OsmFX Mods. Their own "Opening a fridge" demo clip on that page is drawn from
+the identical scene as the reference screenshots above (same items visible:
+"MACK," "Logger Beer," "Lavazas Beer," "Blitz Berry Smoothie"). Both this
+design pack and OsmFX Mods' own commercial pack independently reference the
+same publicly available footage.
+
 These are reskins of `ox_target`'s own stock row-list menu, not the vertical
 rail/dot layout itself — offered here as evidence of this author's ongoing,
 independently dated GTA VI-referenced interaction-design work, not as a claim
