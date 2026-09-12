@@ -60,19 +60,29 @@ Build your own design packs with the React + TypeScript SDK — see [docs/design
 `Context Rail` (`designs/rail/design.lua`) was first committed to this repository on
 **2026-09-12** ([`7c81eed9`](https://github.com/Geckomacabre/osm-target/commit/7c81eed9)).
 Public, dated commits predating it by up to sixteen days show this author already
-building GTA VI/RDR2-referenced interaction UI, independently of this fork and of
-OsmFX Mods' "Target VI" pack:
+building GTA VI/RDR2-referenced interaction UI — including the specific rail/dot
+mechanic itself, not just general GTA VI styling — independently of this fork
+and of OsmFX Mods' "Target VI" pack:
 
 - **2026-08-27** — [`3fde643a`](https://github.com/Geckomacabre/GTA-VI-UI-and-HUD-for-FiveM/commit/3fde643a),
   "Initial bundle: GTA VI-themed resources" — includes a GTA VI-styled reskin of
   `ox_target`'s own menu (`patches/ox_target/web/vice-theme.css`), with a plate
   material sampled from reference footage and a custom GTA Art Deco typeface.
-- **2026-08-31** — vice_hud baseline snapshot (`1c427e1a`), and **2026-09-05**
-  (`c2e4a602`, "ox_target: always-on GTA VI/RDR2-style prompt via vice_hud,
-  mz_textui skin") and **2026-09-10** (`fdcb7ac7`, `d6d2b4af`) — further
-  vice_hud/ox_target GTA VI-styling work. These three commits live in this
-  author's private multi-resource server repository and are available on
-  request; they are not linked here since that repository isn't public.
+- **2026-08-31** (`1c427e1a`) — this author's `vice_hud` resource ships a
+  working `#interact` component implementing the same rail mechanic as
+  `Context Rail`: `html/style.css` draws "a line from THIS marker's centre
+  down to the next row's, so it reads as one continuous connector rather than
+  floating dots," with an X-in-circle marker on the focused row and a hollow
+  dot on every other row, exactly as `Context Rail`'s `confirmGlyph`/
+  `railStyle` options do. `html/index.html` documents this explicitly as
+  "Visual language: a vertical rail connects each row's marker dot... styled
+  off the reference's scrollable item-select screen (the fridge frame)" —
+  twelve days before `Context Rail` was ever committed to this repository.
+- **2026-09-05** (`c2e4a602`, "ox_target: always-on GTA VI/RDR2-style prompt
+  via vice_hud, mz_textui skin") and **2026-09-10** (`fdcb7ac7`, `d6d2b4af`) —
+  further vice_hud/ox_target GTA VI-styling work. These three commits live in
+  this author's private multi-resource server repository and are available
+  on request; they are not linked here since that repository isn't public.
 
 OsmFX Mods' own Target VI product page
 ([osmfxmods.com/product/7667144](https://www.osmfxmods.com/product/7667144))
