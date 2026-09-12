@@ -32,9 +32,25 @@ Config.Input = {
   -- Keybinding: default activation key for ox_lib keybind
   key = 'LMENU',
 
-  -- Controller binding for the same action, as an input-mapper parameter id
-  -- (docs.fivem.net/docs/game-references/input-mapper-parameter-ids/
-  -- pad_digitalbuttonany/). nil leaves targeting keyboard-only.
+  -- Controller binding for the same action, as a PAD_DIGITALBUTTONANY input
+  -- parameter id. nil leaves targeting keyboard-only.
+  --
+  -- The ids are NOT the names they look like. The full valid set, from
+  -- docs.fivem.net/docs/game-references/input-mapper-parameter-ids/
+  -- pad_digitalbuttonany/ :
+  --
+  --   L1_INDEX     R1_INDEX      shoulder buttons
+  --   L2_INDEX     R2_INDEX      triggers (pressed at half travel)
+  --   L3_INDEX     R3_INDEX      stick presses
+  --   LUP_INDEX    LDOWN_INDEX   d-pad up / down
+  --   LLEFT_INDEX  LRIGHT_INDEX  d-pad left / right
+  --   RUP_INDEX    Y / Triangle      RDOWN_INDEX   A / Cross
+  --   RLEFT_INDEX  X / Square        RRIGHT_INDEX  B / Circle
+  --   SELECT_INDEX START_INDEX   TOUCH_INDEX
+  --
+  -- An id outside that set does not fail: the mapper is DIGITALBUTTON*ANY*, so
+  -- with nothing specific to bind, every button on the pad triggers the action.
+  -- Input.register checks the name for that reason.
   --
   -- A shoulder button, not a trigger and not the d-pad, because on a pad both
   -- of those are already carrying the game: the triggers are accelerate and
@@ -45,7 +61,7 @@ Config.Input = {
   -- Both this and the keyboard key are rebindable by the player in FiveM's
   -- keybind settings, and like the keyboard key, a change here only takes
   -- effect next session: ox_lib registers the bind once, at start.
-  padKey = 'LSHOULDER1_INDEX',  -- LB / L1
+  padKey = 'L1_INDEX',  -- LB / L1
 
   -- Interaction mode: 'hold' or 'toggle'
   mode = 'hold',

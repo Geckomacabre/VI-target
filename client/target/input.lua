@@ -2,9 +2,41 @@ Input = {}
 
 local keybindRegistered = false
 
+---Valid PAD_DIGITALBUTTONANY parameter ids.
+---
+---Checked rather than trusted because the failure mode is silent and total: the
+---mapper binds ANY digital button, so a name it does not recognise does not go
+---unbound, it binds the whole pad. Every button then fires the action, which
+---reads as the resource being broken rather than as one wrong string.
+local PAD_BUTTONS = {
+  L1_INDEX = true, R1_INDEX = true,
+  L2_INDEX = true, R2_INDEX = true,
+  L3_INDEX = true, R3_INDEX = true,
+  LUP_INDEX = true, LDOWN_INDEX = true, LLEFT_INDEX = true, LRIGHT_INDEX = true,
+  RUP_INDEX = true, RDOWN_INDEX = true, RLEFT_INDEX = true, RRIGHT_INDEX = true,
+  SELECT_INDEX = true, START_INDEX = true, TOUCH_INDEX = true,
+}
+
+---@return string? padKey validated, or nil with a console warning
+local function padKey()
+  local key = Config.Input.padKey
+  if key == nil then return nil end
+
+  if not PAD_BUTTONS[key] then
+    print(('[osm-target] Config.Input.padKey "%s" is not a PAD_DIGITALBUTTONANY id, so no pad binding was made. '
+      .. 'Valid ids are L1/R1/L2/R2/L3/R3_INDEX, LUP/LDOWN/LLEFT/LRIGHT_INDEX, '
+      .. 'RUP/RDOWN/RLEFT/RRIGHT_INDEX, SELECT/START/TOUCH_INDEX.'):format(tostring(key)))
+    return nil
+  end
+
+  return key
+end
+
 function Input.register()
   if keybindRegistered then return end
   keybindRegistered = true
+
+  local pad = padKey()
 
   lib.addKeybind({
     name = 'osm_target',
@@ -16,8 +48,8 @@ function Input.register()
     -- was; ox_lib wants the mapper and the key together, so both are nil or
     -- neither is. Players can rebind it in FiveM's own keybind settings either
     -- way -- this only decides what it starts as.
-    secondaryMapper = Config.Input.padKey and 'PAD_DIGITALBUTTONANY' or nil,
-    secondaryKey = Config.Input.padKey or nil,
+    secondaryMapper = pad and 'PAD_DIGITALBUTTONANY' or nil,
+    secondaryKey = pad,
 
     onPressed = function()
       if Config.Input.mode == 'toggle' then
