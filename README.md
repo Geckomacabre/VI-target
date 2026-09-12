@@ -1,6 +1,15 @@
 # osm-target (GTA VI-style fork)
+<img width="100%" alt="osm-target banner" src="docs/media/banner.webp" />
 
 [![License: OsmFX Source-Available](https://img.shields.io/badge/License-Source--Available%20v1.0-orange.svg?style=for-the-badge)](LICENSE)
+[![Upstream: OsmFX Mods osm-target](https://img.shields.io/badge/Upstream-OsmFX%20Mods%20osm--target-orange?style=for-the-badge&logo=github)](https://github.com/OsmFX-Mods/osm-target)
+
+<table>
+<tr>
+<td width="50%"><img width="100%" alt="Context Rail — vehicle options" src="docs/media/rail-1.png" /></td>
+<td width="50%"><img width="100%" alt="Context Rail — badges and position counter" src="docs/media/rail-2.png" /></td>
+</tr>
+</table>
 
 > **Modified fork notice.** This repository is a modified derivative work of
 > [`osm-target`](https://github.com/OsmFX-Mods/osm-target) by **OsmFX Mods**,
@@ -123,6 +132,32 @@ Targeting scripts have been a staple of FiveM roleplay for years, but traditiona
 - **Decoupled Presentation Layer**: The interface is not hardcoded into the targeting logic. It is a design pack discovered from `designs/` at startup, so the look can be retuned — or replaced with a pack you author yourself — without touching a line of script code.
 - **100% Drop-In Compatibility**: Zero script rewrites. Comprehensive built-in adapters provide full backwards compatibility with `ox_target`, `qb-target`, and `qtarget` exports and event structures.
 - **Live Database-Backed Administration**: Fine-tune targeting angles, raycast ranges, timings, and visual tunables in real-time with `/targetadmin`. Changes persist to MySQL without server restarts.
+
+---
+
+## What This Fork Changes
+
+Everything above describes the underlying `osm-target` engine, which is
+OsmFX Mods' own work. This is what this fork actually changes on top of it,
+compared to [upstream](https://github.com/OsmFX-Mods/osm-target):
+
+- **`Context Rail` replaces `Radial Sweep` as the shipped design.** Upstream
+  ships the free `Radial Sweep` design pack by default and sells `Target VI`
+  separately. This fork removes `Radial Sweep` entirely and ships only
+  `Context Rail` (`designs/rail/` — see above for its origin).
+- **Full gamepad/controller input support.** Upstream reads confirm/cancel
+  from mouse and keyboard. This fork reads every action from both mouse and
+  pad, fixes pad trigger buttons doubling as both confirm and cancel, fixes
+  and validates the pad binding id, and draws whichever button the player has
+  actually bound instead of a hardcoded glyph.
+- **Vehicle door options ship on by default** (`config.lua`), rather than
+  requiring manual configuration.
+- **No OsmFX Mods marketing assets.** Upstream's `docs/media/` includes
+  promotional preview images of the paid `Target VI` pack (`tvi-2.webp`
+  through `tvi-5.webp`); this fork does not include them.
+
+Nothing else about the underlying engine (targeting logic, framework
+adapters, database schema, admin panel) has been changed.
 
 ---
 
