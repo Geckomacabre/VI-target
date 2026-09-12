@@ -129,8 +129,12 @@ Config.Options = {
 }
 
 -- Default vehicle interactions: register built-in vehicle door options (ox_target parity)
+-- Matches ox_target's `setr ox_target:defaults 1`. Off, a plain car shows only
+-- whatever third-party resources registered on it, which on most vehicles is
+-- nothing at all. On, every vehicle carries four doors, the bonnet and the
+-- trunk, each anchored to its own bone so it appears only when you look at it.
 Config.Defaults = {
-  vehicleDoors = false,
+  vehicleDoors = true,
 }
 
 -- Default design: initial design fallback used before database sync or if selected pack is missing
