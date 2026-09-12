@@ -78,6 +78,11 @@ and of OsmFX Mods' "Target VI" pack:
   "Visual language: a vertical rail connects each row's marker dot... styled
   off the reference's scrollable item-select screen (the fridge frame)" —
   twelve days before `Context Rail` was ever committed to this repository.
+  Rendered directly from that unmodified source (real markup, real CSS, real
+  typeface — Belle Sans Extra Condensed Bold, per `style.css`'s own comment):
+
+  <img width="60%" alt="vice_hud's #interact rail component, 2026-08-31" src="docs/media/vice-hud-interact-rail-20260831.png" />
+
 - **2026-09-05** (`c2e4a602`, "ox_target: always-on GTA VI/RDR2-style prompt
   via vice_hud, mz_textui skin") and **2026-09-10** (`fdcb7ac7`, `d6d2b4af`) —
   further vice_hud/ox_target GTA VI-styling work. These three commits live in
@@ -94,6 +99,13 @@ the identical scene as the reference screenshots above (same items visible:
 "MACK," "Logger Beer," "Lavazas Beer," "Blitz Berry Smoothie"). Both this
 design pack and OsmFX Mods' own commercial pack independently reference the
 same publicly available footage.
+
+**Author's statement.** `Context Rail`'s current version was built from this
+author's own pre-existing `vice_hud` `#interact` rail component (above) and
+the *Grand Theft Auto VI: An Extended Look* reference screenshots earlier in
+this document — no part of OsmFX Mods' "Target VI" design pack was used as a
+source, referenced, or included in building this repository. All code in
+this design pack was generated with Claude Code (Anthropic).
 
 These are reskins of `ox_target`'s own stock row-list menu, not the vertical
 rail/dot layout itself — offered here as evidence of this author's ongoing,
