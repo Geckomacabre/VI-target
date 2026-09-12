@@ -53,6 +53,36 @@ end
 
 local IsControlJustPressed = IsControlJustPressed
 local IsDisabledControlJustPressed = IsDisabledControlJustPressed
+local IsInputDisabled = IsInputDisabled
+
+---Which device the player is actually holding this frame.
+---
+---The polarity is the confusing part and it is NOT guessed: control 2 reads as
+---DISABLED while a keyboard and mouse is the active device, and enabled on a
+---pad. Two resources on a live server independently rely on that -- ox_inventory's
+---client.lua and NativeUI's Utils.lua -- and the native's own Rockstar name,
+---IS_USING_KEYBOARD_AND_MOUSE (0xA571D46727E2B718), agrees with them. FiveM
+---documents the same hash under _IS_USING_KEYBOARD, aliased _IS_INPUT_DISABLED,
+---which is where the name stops being self-explanatory.
+local function usingPad()
+  return not IsInputDisabled(2)
+end
+
+---Resolve a control declaration to the ids that apply to the current device.
+---
+---A plain id, or a list of them, is read on any device. A { kbm = ..., pad = ... }
+---table splits them, which matters more than it looks: GTA maps one physical
+---control to different ACTIONS per device. INPUT_ATTACK is a left click on a
+---mouse but the right trigger on a pad, where it is also how you accelerate --
+---so a pad player confirming every option they scrolled past was really just
+---driving. INPUT_AIM has the same problem with the left trigger on foot.
+local function controlsFor(entry)
+  if type(entry) == 'table' and (entry.kbm or entry.pad) then
+    return (usingPad() and entry.pad or entry.kbm) or {}
+  end
+
+  return entry
+end
 
 ---A control id, or a list of them. The list is what makes one action answer to
 ---both a mouse and a pad without the caller knowing which device is in the
@@ -74,18 +104,18 @@ end
 ---Get scroll input direction: return -1 for up, 1 for down, or 0 for idle.
 ---@return -1 | 0 | 1
 function Input.scrollDelta()
-  if pressed(Config.Input.scrollUp) then return -1 end
-  if pressed(Config.Input.scrollDown) then return 1 end
+  if pressed(controlsFor(Config.Input.scrollUp)) then return -1 end
+  if pressed(controlsFor(Config.Input.scrollDown)) then return 1 end
   return 0
 end
 
 function Input.confirmPressed()
-  return pressed(Config.Input.confirm)
+  return pressed(controlsFor(Config.Input.confirm))
 end
 
 ---Check cancel input. INPUT_FRONTEND_CANCEL (Backspace / B on a pad) used to be
 ---hardcoded here; it is in Config.Input.cancel's list now, alongside the right
 ---click, so every control this reads is declared in one place.
 function Input.cancelPressed()
-  return pressed(Config.Input.cancel)
+  return pressed(controlsFor(Config.Input.cancel))
 end

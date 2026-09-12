@@ -36,25 +36,50 @@ Config.Input = {
   -- (docs.fivem.net/docs/game-references/input-mapper-parameter-ids/
   -- pad_digitalbuttonany/). nil leaves targeting keyboard-only.
   --
-  -- Avoid LUP_INDEX and LDOWN_INDEX: the d-pad's up and down already move the
-  -- focus through the list, via the frontend controls below. Both this and the
-  -- keyboard key are rebindable by the player in FiveM's keybind settings, and
-  -- like the keyboard key, a change here only takes effect next session --
-  -- ox_lib registers the bind once, at start.
-  padKey = 'LLEFT_INDEX',  -- D-pad left
+  -- A shoulder button, not a trigger and not the d-pad, because on a pad both
+  -- of those are already carrying the game: the triggers are accelerate and
+  -- aim, and the d-pad is the radio while driving. Avoid LUP_INDEX/LDOWN_INDEX
+  -- for the same reason the confirm list avoids the triggers -- up and down
+  -- already move the focus through the list.
+  --
+  -- Both this and the keyboard key are rebindable by the player in FiveM's
+  -- keybind settings, and like the keyboard key, a change here only takes
+  -- effect next session: ox_lib registers the bind once, at start.
+  padKey = 'LSHOULDER1_INDEX',  -- LB / L1
 
   -- Interaction mode: 'hold' or 'toggle'
   mode = 'hold',
 
-  -- Each of these is a control id or a list of them, so the same action answers
-  -- to whichever device the player is holding. GTA gives the mouse wheel and
-  -- the pad's menu controls different ids because they are different devices,
-  -- not different intents -- Rockstar's own menus read them as one and the same
-  -- (see clothes_shop's 188/187 pair, or the car meet grouping 241 with 188).
-  confirm = { 24, 201 },      -- Left click (INPUT_ATTACK) / A-Cross (INPUT_FRONTEND_ACCEPT)
-  cancel = { 25, 194 },       -- Right click (INPUT_AIM) / B-Circle (INPUT_FRONTEND_CANCEL)
-  scrollUp = { 241, 188 },    -- Wheel up (INPUT_CURSOR_SCROLL_UP) / d-pad up (INPUT_FRONTEND_UP)
-  scrollDown = { 242, 187 },  -- Wheel down / d-pad down (INPUT_FRONTEND_DOWN)
+  -- Split per device, not merged into one list, because a single GTA control id
+  -- is a DIFFERENT physical button depending on what the player is holding.
+  -- INPUT_ATTACK is a left click on a mouse and the right trigger on a pad --
+  -- which is also accelerate, so reading it on a pad confirmed an option every
+  -- time the player touched the throttle. INPUT_AIM is the left trigger, with
+  -- the same problem on foot. Neither is read on a pad any more.
+  --
+  -- Each entry may still be a plain id or a list, which is read on any device.
+  confirm = {
+    kbm = { 24 },        -- Left click (INPUT_ATTACK)
+    pad = { 201 },       -- A / Cross (INPUT_FRONTEND_ACCEPT)
+  },
+  cancel = {
+    kbm = { 25, 194 },   -- Right click (INPUT_AIM), Backspace (INPUT_FRONTEND_CANCEL)
+    pad = { 194 },       -- B / Circle
+  },
+  -- The pad's up and down are the d-pad and the left stick. Rockstar's own
+  -- menus treat these and the wheel as one intent (clothes_shop pairs 188/187,
+  -- the car meet groups 241 with 188), so they are the same action here too --
+  -- just never read on the wrong device. Note the d-pad changes radio station
+  -- while driving; the game does that, not this, and it is why activation sits
+  -- on a shoulder button.
+  scrollUp = {
+    kbm = { 241 },       -- Wheel up (INPUT_CURSOR_SCROLL_UP)
+    pad = { 188 },       -- D-pad / stick up (INPUT_FRONTEND_UP)
+  },
+  scrollDown = {
+    kbm = { 242 },       -- Wheel down
+    pad = { 187 },       -- D-pad / stick down (INPUT_FRONTEND_DOWN)
+  },
 
   -- Control suppression: disable weapon and vehicle cycling during interaction.
   -- Suppressing a control does not stop this resource reading it -- the input
