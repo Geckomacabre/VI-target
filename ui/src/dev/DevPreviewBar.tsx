@@ -35,16 +35,16 @@ export function DevPreviewBar({ onAdmin, onPrefs }: Props) {
         <Btn onClick={() => onPrefs({ ...MOCK_PREFS })}>Prefs</Btn>
       </Row>
       <Row label="Surfaces">
-        <Link href="?surface=menu&design=radial">menu</Link>
-        <Link href="?surface=indicator&state=near&design=radial">indicator</Link>
-        <Link href="?surface=cursor&design=radial">cursor</Link>
+        <Link href="?surface=menu&design=rail">menu</Link>
+        <Link href="?surface=indicator&state=near&design=rail">indicator</Link>
+        <Link href="?surface=cursor&design=rail">cursor</Link>
       </Row>
     </Panel>
   )
 }
 
 export function DevWorldBar({ surface }: { surface: 'menu' | 'indicator' | 'cursor' }) {
-  const [design, setDesign] = useState(new URLSearchParams(location.search).get('design') ?? 'radial')
+  const [design, setDesign] = useState(new URLSearchParams(location.search).get('design') ?? 'rail')
   const [focus, setFocus] = useState(3)
   const [count, setCount] = useState(SAMPLE.length)
 

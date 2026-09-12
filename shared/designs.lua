@@ -195,7 +195,7 @@ end
 CreateThread(function()
   if #Designs.order > 0 then return end
 
-  local expected = (Config and Config.Design) or 'radial'
+  local expected = (Config and Config.Design) or 'rail'
   local onDisk = LoadResourceFile(GetCurrentResourceName(), ('designs/%s/design.lua'):format(expected))
 
   if onDisk then

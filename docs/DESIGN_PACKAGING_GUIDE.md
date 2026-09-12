@@ -6,7 +6,7 @@ This guide details how to create new interface designs for **osm-target**, test 
 
 ## 1. Overview & Distribution Model
 
-`osm-target` uses a modular design pack system. The base resource (`osm-target`, public repository) ships with the default **radial** design. Additional designs (such as **Target VI**) can be purchased and added separately without touching the core code.
+`osm-target` uses a modular design pack system. The base resource (`osm-target`, public repository) ships with the default **Context Rail** (`rail`) design. Additional designs (such as **Target VI**) can be purchased and added separately without touching the core code.
 
 ### The Two Distribution Tiers
 

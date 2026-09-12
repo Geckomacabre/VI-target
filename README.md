@@ -31,43 +31,22 @@ Targeting scripts have been a staple of FiveM roleplay for years, but traditiona
 
 Designs are hot-swappable packs. Switch and retune them live in `/targetadmin` — no restarts.
 
-<table>
-<tr>
-<td width="45%">
-  <video src="https://github.com/user-attachments/assets/e8aaf0d9-00dd-4d3b-89c8-072979fc29bf" width="100%" autoplay loop muted playsinline controls>
-    <a href="https://github.com/user-attachments/assets/e8aaf0d9-00dd-4d3b-89c8-072979fc29bf">Watch Radial Sweep demo</a>
-  </video>
+### Context Rail — *Included Free*
+The design shipped in the box, and the one every fresh install starts on.
 
-</td>
-<td width="55%">
-
-### Radial Sweep — *Included Free*
-The flagship open-source design, shipped in the box.
-- **Fluid Radial Menu**: Sleek circular wheel with dynamic cursor tracking and subtle magnetic snapping.
-- **Contextual Distance Scaling**: World-space indicator that expands as you approach interactable entities.
-- **Detailed Badges & Submenus**: Clear visual cues for nested menus and item/job requirements.
-- **Fully Customizable**: Adjust colors, opacity, typography, and corner radius live in the admin panel.
-
-</td>
-</tr>
-<tr>
-<td width="45%">
-  <video src="https://github.com/user-attachments/assets/d17948f6-95ba-48a0-aa87-d641c7d4fff2" width="100%" autoplay loop muted playsinline controls>
-    <a href="https://github.com/user-attachments/assets/d17948f6-95ba-48a0-aa87-d641c7d4fff2">Watch Target VI demo</a>
-  </video>
-</td>
-<td width="55%">
+- **Rail Pinned To The Entity**: A vertical rail drawn straight onto the world with no panel behind it. The focused node sits exactly on the point the player is aimed at.
+- **Reads As Gated At A Glance**: An ineligible row swaps its node for a padlock and prints its requirement underneath without the player scrolling onto it first.
+- **Scroll Behaviour You Pick**: Park the focus on the entity and slide the list past it, or hold the rows still and walk the focus down them.
+- **Condensed, Legible Over Anything**: Condensed typography with a tunable scrim and contrast keyline, so white type survives a white fridge door.
+- **Fully Customizable**: Side, row count, spacing, confirm glyph, typeface, colors and motion — all live in the admin panel.
 
 ### Target VI — *Premium Pack*
 A clean, minimal list interface built for fast readability and quick interaction.
+
 - **Colorful Item Badges**: Supports vibrant colored tags and labels to highlight prices, item types, or specific actions.
 - **Mouse Click Prompts**: Option to display mouse click icons and clear input hints right next to active options.
 - **Lightweight Rail Layout**: Unobtrusive dot indicator and smooth row focus that keeps the screen clear.
 - **Available now** at [osmfxmods.com](https://osmfxmods.com) and our [Discord](https://www.osmfxmods.com/discord).
-
-</td>
-</tr>
-</table>
 
 ### More Designs & Custom Packs
 Additional premium design packs will be released on [osmfxmods.com](https://osmfxmods.com). You can also build your own bespoke design packs using our modern React + TypeScript SDK. See [docs/design-packs.md](docs/design-packs.md) for full instructions.

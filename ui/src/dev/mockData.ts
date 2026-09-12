@@ -27,7 +27,7 @@ export const MOCK_DESIGNS: DesignManifestEntry[] = RAW_DESIGNS.map((design) => (
 }))
 
 /** Initial fallback design ID for local development harness. */
-const FIRST_DESIGN = RAW_DESIGNS.some((d) => d.id === 'radial') ? 'radial' : (RAW_DESIGNS[0]?.id ?? '')
+const FIRST_DESIGN = RAW_DESIGNS.some((d) => d.id === 'rail') ? 'rail' : (RAW_DESIGNS[0]?.id ?? '')
 
 function defaultDesignTunables(): Record<string, Tunables> {
   const out: Record<string, Tunables> = {}

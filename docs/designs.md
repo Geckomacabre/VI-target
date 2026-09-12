@@ -1,6 +1,6 @@
 # Interface Designs
 
-**osm-target** ships with the **Radial Sweep** design out of the box. Additional premium designs are available as standalone add-on packs from [OsmFX Mods](https://osmfxmods.com).
+**osm-target** ships with the **Context Rail** design out of the box. Additional premium designs are available as standalone add-on packs from [OsmFX Mods](https://osmfxmods.com).
 
 Each design is packaged as a modular pack located within the `designs/` directory. See [Design Packs](./design-packs.md) for installation and management details.
 
@@ -8,35 +8,26 @@ The `/targetadmin` panel automatically enumerates currently installed designs. T
 
 ---
 
-## 1. Radial Sweep (`radial`)
+## 1. Context Rail (`rail`)
 
-**Concept**: Options fan along a circular arc anchored directly to the targeted entity. Scrolling rotates the options through a fixed focus slot.
+**Concept**: A vertical rail pinned to the entity, drawn straight onto the world with no panel behind it. Options hang off the rail as nodes; scrolling walks them past the focus node, which sits exactly on the world point the player is aimed at.
 
-- **Focus Mechanics**: The active option expands into a full label plate displaying title, description, and requirements; neighboring options compress into compact icon discs that scale down with angular distance.
+- **Focus Mechanics**: The focused node opens into a ring carrying the confirm glyph and its label grows to the emphasis size. Neighbouring rows stay legible but recede with distance from the focus, and rows outside the window fade out rather than pop.
+- **Gated Rows Explain Themselves**: An ineligible row swaps its node for a padlock and prints its requirement underneath *without* the player having to scroll onto it, so a list reads as gated at a glance.
 - **Key Tunables**:
-  - `plateWidth`: Maximum width of the active label plate (300px–520px).
-  - `arcSide`: Opening direction (`right`, `left`, `up`).
-  - `arcSpan`: Angular spread of visible options (120°–300°).
-  - `arcRadius`: Distance from the target anchor point (170px–280px).
-  - `neighbours`: Number of visible neighbor discs rendered on each side.
-  - `spokes` & `hubRing`: Detent tick marks and world hub anchor visibility.
+  - `listSide`: Opening direction (`right`, `left`). The world anchor offset follows automatically.
+  - `listWidth`: Width of the label column before text truncates (320px–820px).
+  - `visible`: Number of rows in view simultaneously (3–8). Longer lists scroll through the window.
+  - `anchorMode`: `slot` parks the focused row on the entity and slides the list past it; `list` holds the rows still and walks the focus down them, scrolling only at the window edges.
+  - `focusEmphasis`: Size of the focused label against the rest of the list (100%–145%).
+  - `confirmGlyph`: Mark inside the focused node (`cross`, `mouse`, `dot`, `none`).
+  - `railStyle`: Hairline through the nodes, bare nodes, or nothing at all.
+  - `rowIcon`: Whether a registered option icon is drawn beside its label (`none`, `focus`, `all`).
+  - `submenuGlyph`, `counter`: Nested-menu mark, and a `3 / 7` position readout for long lists.
+  - `scrim` & `textOutline`: Soft background darkening and the contrast shadow under every glyph — the two controls that keep white type readable against a white fridge door.
+  - `fontFamily`: Condensed typeface (Barlow Semi Condensed, Oswald, Saira Condensed, Archivo Narrow, Plus Jakarta Sans).
 
----
-
-## 2. Target VI (`targetvi`) — *Premium Pack*
-
-**Concept**: Diegetic, panel-less design featuring high-contrast condensed typography placed directly in world space along a hairline rail.
-
-- **Focus Mechanics**: Options are aligned along a minimalist dot rail. The focused row expands in scale and presents an action badge indicating the confirm button. Submenus display an explicit three-dot indicator badge.
-- **Key Tunables**:
-  - `fontFamily`: Condensed typeface selection (Barlow Semi Condensed, Saira Condensed, Oswald, Roboto Condensed, Archivo Narrow, Plus Jakarta Sans).
-  - `listWidth`: Width of the text column before wrapping (320px–820px).
-  - `visible`: Number of rows in view simultaneously (3–8).
-  - `focusEmphasis`: Scale multiplier for the focused label (100%–140%).
-  - `confirmGlyph`: Action badge graphic (`mouse`, `dot`, `none`).
-  - `scrim` & `textOutline`: Soft background darkening and glyph keyline contrast.
-
-Available at [osmfxmods.com](https://osmfxmods.com) and our [Discord](https://www.osmfxmods.com/discord).
+> The condensed faces are fetched from Google Fonts on first use. A server with no outbound font access still renders the design correctly, falling back to a system face.
 
 ---
 
@@ -45,5 +36,5 @@ Available at [osmfxmods.com](https://osmfxmods.com) and our [Discord](https://ww
 Because option labels originate from external scripts with varying lengths, text handling is fully configurable across all designs:
 
 1. **Label Wrapping (`labelLines`)**: Under the **Typography** settings group, configure whether option text is restricted to a single line or allowed to wrap to 2 or 3 lines before applying truncation.
-2. **Width Controls**: Each design provides a dedicated width control (`plateWidth`, `listWidth`, etc.) to accommodate server-specific label conventions.
+2. **Width Controls**: Each design provides a dedicated width control (`listWidth`, `plateWidth`, etc.) to accommodate server-specific label conventions.
 3. **Texture Boundary Clipping**: Dimensions are automatically constrained within DUI canvas limits to prevent visual clipping.

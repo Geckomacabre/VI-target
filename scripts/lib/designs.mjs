@@ -8,7 +8,7 @@ export const SOURCE_DIR = resolve(UI_DIR, 'src/designs')
 export const PACK_DIR = resolve(ROOT, 'designs')
 
 /** List of default design packs included in public distribution. */
-export const FREE_DESIGNS = ['radial']
+export const FREE_DESIGNS = ['rail']
 
 /** Discover available design source directories containing component and descriptor files. */
 export function sourceDesignIds() {

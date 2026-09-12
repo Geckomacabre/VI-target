@@ -134,4 +134,4 @@ Config.Defaults = {
 }
 
 -- Default design: initial design fallback used before database sync or if selected pack is missing
-Config.Design = 'radial'
+Config.Design = 'rail'

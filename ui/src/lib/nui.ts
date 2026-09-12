@@ -32,7 +32,7 @@ export function surfaceParams() {
   return {
     surface: (params.get('surface') ?? 'app') as 'app' | 'menu' | 'indicator' | 'cursor',
     state: (params.get('state') ?? 'idle') as 'idle' | 'near' | 'active',
-    design: params.get('design') ?? 'radial',
+    design: params.get('design') ?? 'rail',
     // Read version from query string: enables immediate cache-busting on initial DUI fetch.
     version: params.get('v') ?? undefined,
   }

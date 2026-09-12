@@ -26,7 +26,7 @@ The host and individual designs are **separate builds**:
 ### Browser Development Tools
 - **Live Preview Harness**: Running `npm run dev` exposes a top development bar to simulate state payloads and switch surfaces.
 - **Surface URLs**: Each surface can be loaded directly with query parameters:
-  - `?surface=menu&design=radial` — Test the menu surface with a specific design.
+  - `?surface=menu&design=rail` — Test the menu surface with a specific design.
   - `?surface=indicator&state=near` — Test the world indicator surface.
   - `?surface=cursor` — Test the screen cursor surface.
   - `?demo=1` — Automatically populates sample options of various lengths and gate types.

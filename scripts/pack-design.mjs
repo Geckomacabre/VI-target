@@ -58,7 +58,7 @@ osm-target/                         # Complete ready-to-run FiveM resource (late
   ├── locales/...
   ├── html/...
   └── designs/
-        ├── radial/                 # Base radial design
+        ├── rail/                   # Base Context Rail design
         └── ${design.id}/           # Pre-installed ${design.label}
               ├── design.lua
               └── design.js

@@ -5,7 +5,7 @@ An **osm-target** design pack is a self-contained module placed in the `designs/
 ```
 osm-target/
   designs/
-    radial/          # Default design included with osm-target
+    rail/            # Default design included with osm-target
       design.lua     # Identity, tunable schema, and default values
       design.js      # Compiled UI bundle
     targetvi/        # Optional standalone design pack
