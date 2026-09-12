@@ -1,6 +1,21 @@
-# OsmFX Mods Target - World-Space DUI Targeting System - GTA VI Rail Design - FREE
+# VI-Target — GTA VI-Style World-Space Targeting (fork of osm-target)
 
 [![License: OsmFX Source-Available](https://img.shields.io/badge/License-Source--Available%20v1.0-orange.svg?style=for-the-badge)](LICENSE)
+
+> **Modified fork notice.** This repository is a modified derivative work of
+> [`osm-target`](https://osmfxmods.com/) by **OsmFX Mods**, licensed under the
+> [OsmFX Mods Source-Available License v1.0](LICENSE). It is not an official,
+> endorsed, or supported release of OsmFX Mods — for the original script and
+> official support, see **https://osmfxmods.com/**.
+>
+> The bundled `Context Rail` design pack was designed by **Geckomacabre**,
+> with the assistance of Claude (Anthropic), with reference to Rockstar
+> Games' own footage — *Grand Theft Auto VI: An Extended Look* — not to
+> OsmFX Mods' commercial "Target VI" design pack. See the reference
+> screenshots below, taken from that Rockstar footage. This author's
+> `vice_hud` resource already contains a GTA VI/RDR2-style interaction
+> treatment predating this fork, which is available as evidence of
+> independent, prior development of this visual direction.
 
 A modern, world-space DUI targeting and interaction framework for FiveM. Unlike traditional screen-space target scripts, `osm-target` projects interactive surfaces directly onto entities in 3D world space with depth perception, intuitive requirement explanations, and complete drop-in compatibility for existing `ox_target`, `qb-target`, and `qtarget` scripts.
 
@@ -28,6 +43,15 @@ This fork ships one design, **Context Rail**, and it is the only one installed. 
 - **Fully Customizable**: Side, row count, spacing, confirm glyph, typeface, colors and motion — all live in the admin panel.
 
 Build your own design packs with the React + TypeScript SDK — see [docs/design-packs.md](docs/design-packs.md).
+
+**Reference.** The rail concept above was modeled on Rockstar Games' own interaction UI in *Grand Theft Auto VI* (screenshots are Rockstar's, shown here for design-reference/commentary purposes only — no game assets are included in this resource):
+
+<table>
+<tr>
+<td width="50%"><img width="100%" alt="GTA VI in-game interaction rail — reference 1" src="docs/media/gta6-reference-1.png" /></td>
+<td width="50%"><img width="100%" alt="GTA VI in-game interaction rail — reference 2" src="docs/media/gta6-reference-2.png" /></td>
+</tr>
+</table>
 
 ---
 
@@ -110,6 +134,8 @@ Read the full [LICENSE](LICENSE) for details.
 
 ## Credits & AI Attribution
 
+- **Base script**: [`osm-target`](https://osmfxmods.com/) by **OsmFX Mods** — this repository is a modified fork of their work, used under the OsmFX Mods Source-Available License v1.0. For the original, official releases, and support, see https://osmfxmods.com/.
+- **Design reference**: The `Context Rail` interface is modeled on Rockstar Games' in-game interaction UI from *Grand Theft Auto VI*.
 - Concept and Framework adapters: `ox_target` (formerly `qtarget`) and `qb-target`.
 
 ---

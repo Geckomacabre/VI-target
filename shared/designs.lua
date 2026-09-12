@@ -201,7 +201,7 @@ CreateThread(function()
   if onDisk then
     warn(('no designs registered, yet designs/%s/design.lua exists. The resource is not loading it: check that fxmanifest.lua lists "designs/**/design.lua" in shared_scripts, then restart the resource.'):format(expected))
   else
-    warn('no designs are installed. Put at least one design pack folder in designs/ (the free Radial Sweep ships with osm-target).')
+    warn('no designs are installed. Put at least one design pack folder in designs/.')
   end
 end)
 
