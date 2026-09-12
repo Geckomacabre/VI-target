@@ -1,14 +1,23 @@
 # Interface Designs
 
-**osm-target** ships with the **Context Rail** design out of the box. Additional premium designs are available as standalone add-on packs from [OsmFX Mods](https://osmfxmods.com).
-
-Each design is packaged as a modular pack located within the `designs/` directory. See [Design Packs](./design-packs.md) for installation and management details.
+**osm-target** ships with the **Context Rail** design. The interface is packaged as a modular pack in the `designs/` directory, and further packs can be authored against the Design SDK — see [Design Packs](./design-packs.md) for installation, management and authoring details.
 
 The `/targetadmin` panel automatically enumerates currently installed designs. Tunable configurations are stored independently per design, preserving custom settings across design switches and pack reinstalls.
 
 ---
 
-## 1. Context Rail (`rail`)
+## Context Rail (`rail`)
+
+<table>
+<tr>
+<td width="50%"><img width="100%" alt="Context Rail — vehicle options" src="media/rail-1.png" /></td>
+<td width="50%"><img width="100%" alt="Context Rail — badges and position counter" src="media/rail-2.png" /></td>
+</tr>
+<tr>
+<td width="50%"><img width="100%" alt="Context Rail — gated rows explain themselves" src="media/rail-3.png" /></td>
+<td width="50%"><img width="100%" alt="Context Rail — opened to the left" src="media/rail-4.png" /></td>
+</tr>
+</table>
 
 **Concept**: A vertical rail pinned to the entity, drawn straight onto the world with no panel behind it. Options hang off the rail as nodes; scrolling walks them past the focus node, which sits exactly on the world point the player is aimed at.
 
@@ -36,5 +45,5 @@ The `/targetadmin` panel automatically enumerates currently installed designs. T
 Because option labels originate from external scripts with varying lengths, text handling is fully configurable across all designs:
 
 1. **Label Wrapping (`labelLines`)**: Under the **Typography** settings group, configure whether option text is restricted to a single line or allowed to wrap to 2 or 3 lines before applying truncation.
-2. **Width Controls**: Each design provides a dedicated width control (`listWidth`, `plateWidth`, etc.) to accommodate server-specific label conventions.
+2. **Width Controls**: Each design provides a dedicated width control (`listWidth` here) to accommodate server-specific label conventions.
 3. **Texture Boundary Clipping**: Dimensions are automatically constrained within DUI canvas limits to prevent visual clipping.

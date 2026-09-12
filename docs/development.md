@@ -106,13 +106,13 @@ Design packs are modular subpackages residing in `designs/<id>/` (see [Design Pa
 
 ```bash
 cd ui
-npm run build:all          # Builds host and all design packs
-npm run verify             # Validates packs against the SDK
-npm run pack -- targetvi   # Packages dist/packs/osm-target-targetvi-v1.0.0.zip
-npm run pack:public        # Builds dist/public/osm-target (public distribution with free packs)
+npm run build:all      # Builds host and all design packs
+npm run verify         # Validates packs against the SDK
+npm run pack -- <id>   # Packages dist/packs/osm-target-<id>-v<version>.zip
+npm run pack:public    # Builds dist/public/osm-target (public distribution)
 ```
 
-The `pack:public` script stages a release distribution with premium designs excluded and verifies that the core build compiles cleanly. Free design inclusion is configured in `scripts/lib/designs.mjs`.
+The `pack:public` script stages a release distribution and verifies that the core build compiles cleanly. Which packs it includes is configured in `scripts/lib/designs.mjs`.
 
 ---
 

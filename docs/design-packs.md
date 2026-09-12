@@ -8,7 +8,7 @@ osm-target/
     rail/            # Default design included with osm-target
       design.lua     # Identity, tunable schema, and default values
       design.js      # Compiled UI bundle
-    targetvi/        # Optional standalone design pack
+    custom/          # Any further pack, dropped in the same way
       design.lua
       design.js
 ```
@@ -125,10 +125,10 @@ See [Development Guide](./development.md#adding-a-new-design) for authoring work
 
 ```bash
 cd ui
-npm run build:design -- targetvi   # Compiles to designs/targetvi/
-npm run verify                     # Validates pack against SDK contract
-npm run pack -- targetvi           # Packages dist/packs/osm-target-targetvi-v1.0.0.zip
-npm run pack:public                # Builds public distribution with free design
+npm run build:design -- <id>   # Compiles to designs/<id>/
+npm run verify                 # Validates pack against SDK contract
+npm run pack -- <id>           # Packages dist/packs/osm-target-<id>-v<version>.zip
+npm run pack:public            # Builds the public distribution
 ```
 
 The resulting zip archive contains `designs/<id>/` along with a `README.md` guide for straightforward installation.

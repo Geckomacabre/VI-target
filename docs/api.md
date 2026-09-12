@@ -200,7 +200,7 @@ icon = 'fas fa-car'    -- FontAwesome icon class
 ```
 
 - Unrecognized icon identifiers gracefully fall back to a standard neutral icon.
-- `badges`: Accepts an array of up to 3 icon/color pairs for designs that support visual tags (such as Target VI).
+- `badges`: Accepts an array of up to 3 icon/color pairs for designs that support visual tags.
 
 ---
 

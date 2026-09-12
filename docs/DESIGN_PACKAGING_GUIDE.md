@@ -1,19 +1,19 @@
 # Design Authoring & Packaging Guide
 
-This guide details how to create new interface designs for **osm-target**, test and verify them against the Design SDK, and package them into distributable **Built** and **Source** ZIP archives for customers.
+This guide details how to create new interface designs for **osm-target**, test and verify them against the Design SDK, and package them into distributable **Built** and **Source** ZIP archives.
 
 ---
 
 ## 1. Overview & Distribution Model
 
-`osm-target` uses a modular design pack system. The base resource (`osm-target`, public repository) ships with the default **Context Rail** (`rail`) design. Additional designs (such as **Target VI**) can be purchased and added separately without touching the core code.
+`osm-target` uses a modular design pack system. The base resource ships with the default **Context Rail** (`rail`) design. Further designs are dropped into `designs/` and picked up on restart, without touching the core code.
 
 ### The Two Distribution Tiers
 
 | Tier | Archive Filename | Target Audience | What is Included |
 |---|---|---|---|
-| **Built Edition** | `osm-target-<id>-v<version>-built.zip` | Standard server owners / plug-and-play buyers | **Complete `osm-target/` resource** with `<id>` pre-installed, **plus** standalone `designs/<id>/` folder and `README.md`. |
-| **Source Edition** | `osm-target-<id>-v<version>-source.zip` | Developers / studios wanting to customize designs | **Complete `osm-target/` resource** with `<id>` pre-installed **AND** uncompiled source files in `osm-target/ui/src/designs/<id>/`, **plus** standalone `designs/<id>/` & `ui/src/designs/<id>/` folders and `README.md`. |
+| **Built Edition** | `osm-target-<id>-v<version>-built.zip` | Standard server owners / plug-and-play installs | **Complete `osm-target/` resource** with `<id>` pre-installed, **plus** standalone `designs/<id>/` folder and `README.md`. |
+| **Source Edition** | `osm-target-<id>-v<version>-source.zip` | Developers wanting to customize designs | **Complete `osm-target/` resource** with `<id>` pre-installed **AND** uncompiled source files in `osm-target/ui/src/designs/<id>/`, **plus** standalone `designs/<id>/` & `ui/src/designs/<id>/` folders and `README.md`. |
 
 ---
 
@@ -222,13 +222,13 @@ The repository includes an automated workflow at `.github/workflows/package-desi
 2. Click the **Actions** tab.
 3. Select **Package Design Packs** on the left.
 4. Click **Run workflow**:
-   - Choose the design ID (e.g. `targetvi` or `all`).
+   - Choose the design ID (e.g. `rail` or `all`).
    - Choose the tier (`both`, `built`, or `source`).
    - Click **Run workflow**.
 5. When complete, download the packaged ZIPs directly from the **Artifacts** section of the run.
 
 ### Release on Tag Push
-Pushing a release tag (e.g. `git tag design-targetvi-v1.0.0 && git push origin design-targetvi-v1.0.0` or `v1.0.0`) automatically:
+Pushing a release tag (e.g. `git tag design-rail-v1.0.0 && git push origin design-rail-v1.0.0` or `v1.0.0`) automatically:
 1. Runs the full build and verification suite.
 2. Packages both Built and Source ZIPs.
 3. Attaches the ZIP archives directly to a newly published **GitHub Release**.

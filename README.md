@@ -1,17 +1,9 @@
 # OsmFX Mods Target - World-Space DUI Targeting System
 <img width="100%" alt="OsmFX Mods Target Banner" src="docs/media/banner.webp" />
 
-[![OsmFX Mods Official Store](https://img.shields.io/badge/OsmFx%20Mods%20Official%20Store-FF8C00?style=for-the-badge&logo=shopify&logoColor=white)](https://osmfxmods.com)
-[![Discord](https://img.shields.io/badge/Discord-Join%20our%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://www.osmfxmods.com/discord)
 [![License: OsmFX Source-Available](https://img.shields.io/badge/License-Source--Available%20v1.0-orange.svg?style=for-the-badge)](LICENSE)
 
 A modern, world-space DUI targeting and interaction framework for FiveM. Unlike traditional screen-space target scripts, `osm-target` projects interactive surfaces directly onto entities in 3D world space with depth perception, intuitive requirement explanations, and complete drop-in compatibility for existing `ox_target`, `qb-target`, and `qtarget` scripts.
-
-[![Watch the Showcase](https://img.shields.io/badge/YouTube-Watch%20the%20Showcase-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/5qNmRHqkjO4)
-
-<sub>*Video demonstrates features; the design pack shown in the video is available on our [website](https://osmfxmods.com).*</sub>
-
-> **Pro Tip:** Elevate your server's experience with more premium resources and exclusive design packs at [OsmFX Mods](https://osmfxmods.com). Join our [Discord](https://www.osmfxmods.com/discord) for exclusive updates, announcements, and support!
 
 ---
 
@@ -27,29 +19,28 @@ Targeting scripts have been a staple of FiveM roleplay for years, but traditiona
 
 ---
 
-## Interface Designs
+## Interface Design — Context Rail
 
-Designs are hot-swappable packs. Switch and retune them live in `/targetadmin` — no restarts.
+The interface is a hot-swappable design pack. Retune it live in `/targetadmin` — no restarts.
 
-### Context Rail — *Included Free*
-The design shipped in the box, and the one every fresh install starts on.
+<table>
+<tr>
+<td width="50%"><img width="100%" alt="Context Rail — vehicle options" src="docs/media/rail-1.png" /></td>
+<td width="50%"><img width="100%" alt="Context Rail — badges and position counter" src="docs/media/rail-2.png" /></td>
+</tr>
+<tr>
+<td width="50%"><img width="100%" alt="Context Rail — gated rows explain themselves" src="docs/media/rail-3.png" /></td>
+<td width="50%"><img width="100%" alt="Context Rail — opened to the left" src="docs/media/rail-4.png" /></td>
+</tr>
+</table>
 
 - **Rail Pinned To The Entity**: A vertical rail drawn straight onto the world with no panel behind it. The focused node sits exactly on the point the player is aimed at.
-- **Reads As Gated At A Glance**: An ineligible row swaps its node for a padlock and prints its requirement underneath without the player scrolling onto it first.
+- **Reads As Gated At A Glance**: An ineligible row swaps its node for a padlock and prints its requirement underneath, without the player scrolling onto it first.
 - **Scroll Behaviour You Pick**: Park the focus on the entity and slide the list past it, or hold the rows still and walk the focus down them.
-- **Condensed, Legible Over Anything**: Condensed typography with a tunable scrim and contrast keyline, so white type survives a white fridge door.
+- **Condensed And Legible**: Condensed typography with a tunable scrim and contrast keyline behind every glyph.
 - **Fully Customizable**: Side, row count, spacing, confirm glyph, typeface, colors and motion — all live in the admin panel.
 
-### Target VI — *Premium Pack*
-A clean, minimal list interface built for fast readability and quick interaction.
-
-- **Colorful Item Badges**: Supports vibrant colored tags and labels to highlight prices, item types, or specific actions.
-- **Mouse Click Prompts**: Option to display mouse click icons and clear input hints right next to active options.
-- **Lightweight Rail Layout**: Unobtrusive dot indicator and smooth row focus that keeps the screen clear.
-- **Available now** at [osmfxmods.com](https://osmfxmods.com) and our [Discord](https://www.osmfxmods.com/discord).
-
-### More Designs & Custom Packs
-Additional premium design packs will be released on [osmfxmods.com](https://osmfxmods.com). You can also build your own bespoke design packs using our modern React + TypeScript SDK. See [docs/design-packs.md](docs/design-packs.md) for full instructions.
+Build your own design packs with the React + TypeScript SDK — see [docs/design-packs.md](docs/design-packs.md).
 
 ---
 
@@ -60,7 +51,7 @@ Additional premium design packs will be released on [osmfxmods.com](https://osmf
 - [oxmysql](https://github.com/overextended/oxmysql) (Optional, required for SQL-backed `/targetadmin` persistence)
 
 ### Installation
-1. Download the latest release package from the [Releases](https://github.com/OsmFX-Mods/osm-target/releases) page.
+1. Download the latest release package from the [Releases](https://github.com/Geckomacabre/VI-target/releases) page.
 2. Extract the `osm-target` folder into your server's `resources` directory.
 3. Ensure `ox_lib` (and `oxmysql` if used) starts before `osm-target` in your `server.cfg`:
    ```cfg
@@ -114,22 +105,7 @@ Released under the **OsmFX Mods Source-Available License v1.0**.
 - **Free for Server Use**: Free to use on any FiveM server, including monetized servers (VIP tiers, donations, Tebex perks).
 - **No Reselling or Bundling**: You may not sell, sublicense, or bundle this script into paid products or on any marketplace.
 
-For commercial partnerships or creator permissions, join our [Discord](https://www.osmfxmods.com/discord). Read the full [LICENSE](LICENSE) for details.
-
-*Small and Medium-sized Creators can get free commercial licenses from my Discord, and create and monetize Design Packs.*
-
----
-
-<table>
-  <tr>
-    <td width="50%"><img width="100%" alt="Target VI Preview 1" src="docs/media/tvi-5.webp" /></td>
-    <td width="50%"><img width="100%" alt="Target VI Preview 2" src="docs/media/tvi-4.webp" /></td>
-  </tr>
-  <tr>
-    <td width="50%"><img width="100%" alt="Target VI Preview 3" src="docs/media/tvi-3.webp" /></td>
-    <td width="50%"><img width="100%" alt="Target VI Preview 4" src="docs/media/tvi-2.webp" /></td>
-  </tr>
-</table>
+Read the full [LICENSE](LICENSE) for details.
 
 ---
 
