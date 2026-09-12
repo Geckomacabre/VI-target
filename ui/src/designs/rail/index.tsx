@@ -6,7 +6,8 @@ import {
 } from '@host'
 import type {
   CSSProperties, CursorShapeName, CursorViewProps, DesignFont, DesignModule, DisabledStyle,
-  IndicatorShapeName, IndicatorViewProps, MenuViewProps, OptionBadge, ReactNode, TargetOption,
+  IndicatorShapeName, IndicatorViewProps, InputPrompts, MenuViewProps, OptionBadge, ReactNode,
+  TargetOption,
 } from '@host'
 
 /* The rail sits ON the world anchor, so the focus node marks the exact point the
@@ -20,8 +21,47 @@ const ROOM = 1024 * 0.84 - 40
 
 const NODE = 52
 
+/* Pad labels arrive as tokens for GTA's own button font, which does not exist
+   inside a CEF frame: rendered verbatim they are tofu boxes. Map the ones worth
+   recognising onto real characters, and refuse to print anything that is not
+   plain ASCII rather than drawing garbage in the player's face. */
+const PAD_GLYPHS: Record<string, string> = {
+  A: 'A', B: 'B', X: 'X', Y: 'Y',
+  BUTTON_A: 'A', BUTTON_B: 'B', BUTTON_X: 'X', BUTTON_Y: 'Y',
+  PAD_A: 'A', PAD_B: 'B', PAD_X: 'X', PAD_Y: 'Y',
+  CROSS: '✕', CIRCLE: '◯', SQUARE: '□', TRIANGLE: '△',
+  DPAD_UP: '↑', DPAD_DOWN: '↓', DPAD_LEFT: '←', DPAD_RIGHT: '→',
+  UP: '↑', DOWN: '↓', LEFT: '←', RIGHT: '→',
+  LB: 'LB', RB: 'RB', LT: 'LT', RT: 'RT',
+  L1: 'L1', R1: 'R1', L2: 'L2', R2: 'R2', L3: 'L3', R3: 'R3',
+  LEFT_SHOULDER: 'LB', RIGHT_SHOULDER: 'RB',
+  LEFT_TRIGGER: 'LT', RIGHT_TRIGGER: 'RT',
+  LEFT_STICK: 'L3', RIGHT_STICK: 'R3',
+  START: '≡', SELECT: '❐', BACK: '❐',
+}
+
+const normalise = (label: string) =>
+  label.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '')
+
+/** Printable ASCII only: anything else is a font ligature we cannot draw. */
+const renderable = (value: string) => /^[ -~]+$/.test(value)
+
+/** The characters to draw for a binding, or null when there is nothing bound. */
+function glyphFor(input: InputPrompts | undefined): string | null {
+  const label = input?.confirm?.trim()
+  if (!label) return null
+
+  if (input?.device === 'pad') {
+    const mapped = PAD_GLYPHS[normalise(label)]
+    if (mapped) return mapped
+  }
+
+  return renderable(label) ? label : '•'
+}
+
 function Menu({
-  options, focus, rejectToken, phase, emptyLabel, tunables, reducedMotion, openMs: rawOpenMs,
+  options, focus, rejectToken, phase, emptyLabel, input, tunables, reducedMotion,
+  openMs: rawOpenMs,
 }: MenuViewProps) {
   const openMs = gate(rawOpenMs, tunables, reducedMotion)
 
@@ -33,7 +73,7 @@ function Menu({
   const listWidth = Math.max(240, Math.min(readNumber(tunables, 'listWidth', 680), ROOM - LABEL_GAP))
 
   const railStyle = readString(tunables, 'railStyle', 'line')
-  const confirm = readString(tunables, 'confirmGlyph', 'cross')
+  const confirm = readString(tunables, 'confirmGlyph', 'auto')
   const submenuGlyph = readString(tunables, 'submenuGlyph', 'dots')
   const rowIcon = readString(tunables, 'rowIcon', 'none')
   const showCounter = readBool(tunables, 'counter', false)
@@ -160,6 +200,7 @@ function Menu({
                 enabled={option.enabled}
                 gated={gated}
                 confirm={confirm}
+                glyph={glyphFor(input)}
               />
             }
           />
@@ -247,14 +288,26 @@ interface NodeProps {
   enabled: boolean
   gated: DisabledStyle
   confirm: string
+  /** Characters for the live binding, or null when nothing is bound. */
+  glyph: string | null
 }
 
 /** The rail marker for one row. The focused node carries the confirm glyph, and
  *  a locked row swaps its dot for a padlock so the list reads as gated without
  *  the player having to scroll onto the row first. */
-function Node({ focused, enabled, gated, confirm }: NodeProps) {
+function Node({ focused, enabled, gated, confirm, glyph }: NodeProps) {
   const tone = enabled ? 'var(--t-accent)' : 'var(--t-disabled)'
   const half = NODE / 2
+
+  // Anything past two characters is a word, not a button mark, so it gets a
+  // keycap wide enough to hold it rather than a circle it has to fit inside.
+  const cap = enabled && confirm === 'auto' && !!glyph && glyph.length > 2
+  // Clamped to the node column. A keycap wide enough for "MOUSE1" at a
+  // comfortable size is wider than the gap between the rail and the label, and
+  // a mark that overlaps the word it belongs to is worse than a small one.
+  const capWidth = cap && glyph
+    ? Math.min(LABEL_GAP - 8, Math.max(40, glyph.length * 12 + 18))
+    : 0
 
   if (!focused) {
     if (!enabled && showsLock(gated)) {
@@ -281,10 +334,53 @@ function Node({ focused, enabled, gated, confirm }: NodeProps) {
       viewBox={`0 0 ${NODE} ${NODE}`} width={NODE} height={NODE}
       style={{ overflow: 'visible' }}
     >
-      <circle cx={half} cy={half} r="21" fill="rgba(0,0,0,0.34)" />
-      <circle cx={half} cy={half} r="21" fill="none" stroke={tone} strokeWidth="4" />
+      {/* A ring fits one or two characters. "MOUSE1", "SPACE", "LB" need a
+          keycap that can grow instead, or the label is squeezed into an
+          illegible smear -- which is what a circle does to a word. */}
+      {cap ? (
+        <>
+          <rect
+            x={half - capWidth / 2} y={half - 17} width={capWidth} height="34" rx="9"
+            fill="rgba(0,0,0,0.34)"
+          />
+          <rect
+            x={half - capWidth / 2} y={half - 17} width={capWidth} height="34" rx="9"
+            fill="none" stroke={tone} strokeWidth="3.5"
+          />
+        </>
+      ) : (
+        <>
+          <circle cx={half} cy={half} r="21" fill="rgba(0,0,0,0.34)" />
+          <circle cx={half} cy={half} r="21" fill="none" stroke={tone} strokeWidth="4" />
+        </>
+      )}
 
-      {enabled && confirm === 'cross' && (
+      {/* 'auto' draws whatever is actually bound, which is the only mark that
+          stays true when the player swaps device mid-session. It falls back to
+          the cross until the first prompt sync arrives, so the node is never
+          an empty ring. */}
+      {enabled && confirm === 'auto' && glyph && (
+        <text
+          x={half} y={half}
+          textAnchor="middle" dominantBaseline="central"
+          fill={tone}
+          // textLength makes the fit exact instead of estimated: the label is
+          // condensed to the space there is, whatever the face's metrics turn
+          // out to be, so a long bind cannot spill past the keycap drawn for it.
+          textLength={cap ? capWidth - 14 : undefined}
+          lengthAdjust={cap ? 'spacingAndGlyphs' : undefined}
+          style={{
+            fontSize: cap ? 18 : glyph.length > 1 ? 17 : 24,
+            fontWeight: 700,
+            fontFamily: 'var(--t-font)',
+            letterSpacing: glyph.length > 1 ? '0.02em' : '0',
+          }}
+        >
+          {glyph}
+        </text>
+      )}
+
+      {enabled && (confirm === 'cross' || (confirm === 'auto' && !glyph)) && (
         <path
           d={`M ${half - 8} ${half - 8} L ${half + 8} ${half + 8} M ${half + 8} ${half - 8} L ${half - 8} ${half + 8}`}
           stroke={tone} strokeWidth="4.5" strokeLinecap="round"

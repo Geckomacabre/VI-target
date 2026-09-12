@@ -644,6 +644,10 @@ function Machine.start()
   CreateThread(function()
     while state ~= IDLE do
       Input.suppress()
+      -- Throttled inside, and only sends when the binding or the device
+      -- actually changed, so the prompt follows a controller being unplugged
+      -- mid-session without polling three natives every frame.
+      Input.syncPrompts(GetGameTimer())
       drawTick()
 
       if state == MENU_OPEN then

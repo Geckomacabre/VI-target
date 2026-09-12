@@ -126,7 +126,25 @@ export interface DesignRuntime {
   closeMs: number
 }
 
+/** Which device the player is currently using. */
+export type InputDevice = 'kbm' | 'pad'
+
+/**
+ * The player's live bindings, resolved in Lua from
+ * GetControlInstructionalButton so a design can draw the button actually bound
+ * rather than a fixed glyph. Pad labels are tokens for GTA's own button font,
+ * which does not exist in a CEF frame - a design maps the ones it knows onto
+ * renderable characters and falls back to a neutral mark for the rest.
+ */
+export interface InputPrompts {
+  device: InputDevice
+  confirm: string
+  cancel: string
+}
+
 export interface MenuViewProps extends DesignRuntime {
+  /** Undefined until the first prompt sync arrives. */
+  input?: InputPrompts
   options: TargetOption[]
   focus: number
   /** Token sequence counter triggering refusal feedback animation. */

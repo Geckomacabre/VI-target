@@ -151,3 +151,66 @@ end
 function Input.cancelPressed()
   return pressed(controlsFor(Config.Input.cancel))
 end
+
+--[[ ── Live button prompts ──────────────────────────────────────────────────
+  What the player actually has to press, resolved from the live binding rather
+  than drawn as a fixed glyph, and re-resolved when they change device.
+
+  GetControlInstructionalButton is the same call ox_lib's keybind:getCurrentKey
+  uses; it already returns the pad token when a pad is active. The leading two
+  characters are a format prefix, hence the sub(3).
+
+  The pad tokens are ligatures for GTA's own button font, which does not exist
+  inside a CEF browser frame, so the design maps the ones it recognises onto
+  renderable characters and falls back to a neutral mark for the rest. That
+  mapping belongs in the design, not here: this side reports the binding, the
+  design decides how to draw it.
+]]
+
+local GetControlInstructionalButton = GetControlInstructionalButton
+
+---First control of whichever list applies to the current device. The prompt can
+---only show one button, and the first is the primary by convention.
+local function primary(entry)
+  local list = controlsFor(entry)
+  if type(list) == 'table' then return list[1] end
+  return list
+end
+
+local function labelFor(entry)
+  local control = primary(entry)
+  if not control then return '' end
+
+  local label = GetControlInstructionalButton(0, control, true)
+  return label and label:sub(3) or ''
+end
+
+local prompts = { device = '', confirm = '', cancel = '' }
+local nextPromptCheck = 0
+
+---Resolve the prompts and push them to the surfaces, but only when something
+---actually changed. Called from the targeting loop, so it is throttled rather
+---than resolving three natives every frame.
+---@param now number GetGameTimer()
+function Input.syncPrompts(now)
+  if now < nextPromptCheck then return end
+  nextPromptCheck = now + 400
+
+  local device = usingPad() and 'pad' or 'kbm'
+  local confirm = labelFor(Config.Input.confirm)
+  local cancel = labelFor(Config.Input.cancel)
+
+  if device == prompts.device and confirm == prompts.confirm and cancel == prompts.cancel then
+    return
+  end
+
+  prompts = { device = device, confirm = confirm, cancel = cancel }
+  Surfaces.broadcast('input', prompts)
+end
+
+---Re-send the current prompts, for a surface that has just come up and missed
+---the last change.
+function Input.resendPrompts()
+  if prompts.device == '' then return end
+  Surfaces.broadcast('input', prompts)
+end

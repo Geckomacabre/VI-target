@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNuiEvent } from '../lib/useNuiEvent'
 import { useAppearance } from '../lib/appearance'
 import { useDesignModule } from '../designs'
-import type { MenuFocusPayload, MenuOpenPayload, TargetOption } from '../lib/types'
+import type { InputPrompts, MenuFocusPayload, MenuOpenPayload, TargetOption } from '../lib/types'
 
 type Phase = 'idle' | 'opening' | 'open' | 'closing'
 
@@ -15,6 +15,7 @@ export function MenuSurface() {
   const [emptyLabel, setEmptyLabel] = useState('Nothing to do here')
   const [phase, setPhase] = useState<Phase>('idle')
   const [rejectToken, setRejectToken] = useState(0)
+  const [input, setInput] = useState<InputPrompts | undefined>(undefined)
 
   useNuiEvent<MenuOpenPayload>('menu:open', (data) => {
     setOptions(data.options ?? [])
@@ -25,6 +26,7 @@ export function MenuSurface() {
 
   useNuiEvent<MenuFocusPayload>('menu:focus', (data) => setFocus(data.focus ?? 1))
   useNuiEvent('menu:reject', () => setRejectToken((n) => n + 1))
+  useNuiEvent<InputPrompts>('input', (data) => setInput(data))
   useNuiEvent('menu:close', () => setPhase((current) => (current === 'idle' ? 'idle' : 'closing')))
 
   // Transition opening phase: advance to open state on next animation frame for smooth entrance.
@@ -56,6 +58,7 @@ export function MenuSurface() {
         rejectToken={rejectToken}
         phase={phase === 'open' ? 'open' : phase === 'closing' ? 'closing' : 'opening'}
         emptyLabel={emptyLabel}
+        input={input}
         tunables={appearance.tunables}
         reducedMotion={appearance.reducedMotion}
         openMs={appearance.openMs}

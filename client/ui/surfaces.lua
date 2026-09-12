@@ -45,6 +45,9 @@ function Surfaces.init()
       Wait(delay)
       if not ready then return end
       Surfaces.applyAppearance()
+      -- Along the same retry ladder: a surface that comes up after the last
+      -- device change would otherwise draw the wrong button until the next one.
+      if Input and Input.resendPrompts then Input.resendPrompts() end
     end
   end)
 end

@@ -36,6 +36,8 @@ export type {
   DesignRuntime,
   IndicatorState,
   IndicatorViewProps,
+  InputDevice,
+  InputPrompts,
   MenuViewProps,
   OptionBadge,
   Preferences,
