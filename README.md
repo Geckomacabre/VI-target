@@ -64,6 +64,42 @@ Build your own design packs with the React + TypeScript SDK — see [docs/design
 </tr>
 </table>
 
+Rockstar's own footage also shows a second interaction shape for entities with
+only one or two options — every option shown at once, each bound to its own
+key, with no scrolling involved:
+
+<img width="60%" alt="GTA VI in-game two-option prompt — reference" src="docs/media/gta6-reference-3.png" />
+
+### In progress: matching the reference more closely
+
+A closer pixel-level pass against the reference screenshots above turned up a
+few details `Context Rail`'s current release doesn't get quite right yet —
+node fill/outline treatment (a solid white dot with the bound key cut out in
+black, not a hollow ring or a solid-black node), badge styling (a dark centre
+with a coloured outline and coloured icon, not a solid accent fill), and the
+top/bottom of the list fading out symmetrically instead of the rail line
+staying visible past the faded rows. It also turned up a prompt shape the
+current design doesn't have at all: a collapsed single-row prompt (bound key
++ a "more options" indicator) for 3+ options before the list is opened, and
+the one-or-two-option case above rendered as independently-pressable keys
+rather than forced into the scrolling list.
+
+These were worked out as a standalone HTML mockup first (not yet ported into
+`designs/rail/design.js`) so the exact values could be checked against the
+reference before touching the live DUI:
+
+<table>
+<tr>
+<td width="33%"><img width="100%" alt="Mockup — collapsed prompt for 3+ options" src="docs/media/rail-mockup-collapsed-prompt.png" /></td>
+<td width="33%"><img width="100%" alt="Mockup — expanded rail list with corrected node/badge styling" src="docs/media/rail-mockup-list.png" /></td>
+<td width="33%"><img width="100%" alt="Mockup — two-option prompt, each option its own key" src="docs/media/rail-mockup-two-option-prompt.png" /></td>
+</tr>
+</table>
+
+Porting these into `designs/rail/design.lua`/`design.js` (and adding the new
+collapsed-prompt/two-option-prompt render paths, which don't exist yet) is
+tracked as the next piece of work on this design pack.
+
 ### Proof of independent origin
 
 `Context Rail` (`designs/rail/design.lua`) was first committed to this repository on
