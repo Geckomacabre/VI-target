@@ -1,21 +1,8 @@
-# OsmFX Mods Target - World-Space DUI Targeting System
-<img width="100%" alt="OsmFX Mods Target Banner" src="docs/media/banner.webp" />
+# OsmFX Mods Target - World-Space DUI Targeting System - GTA VI Rail Design - FREE
 
 [![License: OsmFX Source-Available](https://img.shields.io/badge/License-Source--Available%20v1.0-orange.svg?style=for-the-badge)](LICENSE)
 
 A modern, world-space DUI targeting and interaction framework for FiveM. Unlike traditional screen-space target scripts, `osm-target` projects interactive surfaces directly onto entities in 3D world space with depth perception, intuitive requirement explanations, and complete drop-in compatibility for existing `ox_target`, `qb-target`, and `qtarget` scripts.
-
----
-
-## What Makes osm-target Different?
-
-Targeting scripts have been a staple of FiveM roleplay for years, but traditional solutions often come with immersion and clarity trade-offs. Here is how `osm-target` takes interaction to the next level:
-
-- **True World-Space DUI & Magnetization vs Screen-Space Crosshairs**: Traditional targeting systems draw a static 2D icon in the center of your screen and pin option menus flat to your display. `osm-target` projects dynamic DUI surfaces anchored to the entity's actual coordinates in 3D game space with intelligent magnetic cursor snapping. Menus scale with distance and stay attached to the object, preserving immersion.
-- **Clear Requirement Explanations vs Silent Failures**: When a player cannot perform an interaction, older target scripts either hide the option entirely or display an unclickable gray row without context. `osm-target` features a declarative requirement engine that tells players *why* an interaction is locked (e.g., *"Requires Lockpick"*, *"Police Only"*, *"Engine Must Be Off"*).
-- **Decoupled Presentation Layer**: The interface is not hardcoded into the targeting logic. It is a design pack discovered from `designs/` at startup, so the look can be retuned — or replaced with a pack you author yourself — without touching a line of script code.
-- **100% Drop-In Compatibility**: Zero script rewrites. Comprehensive built-in adapters provide full backwards compatibility with `ox_target`, `qb-target`, and `qtarget` exports and event structures.
-- **Live Database-Backed Administration**: Fine-tune targeting angles, raycast ranges, timings, and visual tunables in real-time with `/targetadmin`. Changes persist to MySQL without server restarts.
 
 ---
 
@@ -41,6 +28,18 @@ This fork ships one design, **Context Rail**, and it is the only one installed. 
 - **Fully Customizable**: Side, row count, spacing, confirm glyph, typeface, colors and motion — all live in the admin panel.
 
 Build your own design packs with the React + TypeScript SDK — see [docs/design-packs.md](docs/design-packs.md).
+
+---
+
+## What Makes osm-target Different?
+
+Targeting scripts have been a staple of FiveM roleplay for years, but traditional solutions often come with immersion and clarity trade-offs. Here is how `osm-target` takes interaction to the next level:
+
+- **True World-Space DUI & Magnetization vs Screen-Space Crosshairs**: Traditional targeting systems draw a static 2D icon in the center of your screen and pin option menus flat to your display. `osm-target` projects dynamic DUI surfaces anchored to the entity's actual coordinates in 3D game space with intelligent magnetic cursor snapping. Menus scale with distance and stay attached to the object, preserving immersion.
+- **Clear Requirement Explanations vs Silent Failures**: When a player cannot perform an interaction, older target scripts either hide the option entirely or display an unclickable gray row without context. `osm-target` features a declarative requirement engine that tells players *why* an interaction is locked (e.g., *"Requires Lockpick"*, *"Police Only"*, *"Engine Must Be Off"*).
+- **Decoupled Presentation Layer**: The interface is not hardcoded into the targeting logic. It is a design pack discovered from `designs/` at startup, so the look can be retuned — or replaced with a pack you author yourself — without touching a line of script code.
+- **100% Drop-In Compatibility**: Zero script rewrites. Comprehensive built-in adapters provide full backwards compatibility with `ox_target`, `qb-target`, and `qtarget` exports and event structures.
+- **Live Database-Backed Administration**: Fine-tune targeting angles, raycast ranges, timings, and visual tunables in real-time with `/targetadmin`. Changes persist to MySQL without server restarts.
 
 ---
 
