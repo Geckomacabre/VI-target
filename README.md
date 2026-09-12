@@ -13,7 +13,7 @@ Targeting scripts have been a staple of FiveM roleplay for years, but traditiona
 
 - **True World-Space DUI & Magnetization vs Screen-Space Crosshairs**: Traditional targeting systems draw a static 2D icon in the center of your screen and pin option menus flat to your display. `osm-target` projects dynamic DUI surfaces anchored to the entity's actual coordinates in 3D game space with intelligent magnetic cursor snapping. Menus scale with distance and stay attached to the object, preserving immersion.
 - **Clear Requirement Explanations vs Silent Failures**: When a player cannot perform an interaction, older target scripts either hide the option entirely or display an unclickable gray row without context. `osm-target` features a declarative requirement engine that tells players *why* an interaction is locked (e.g., *"Requires Lockpick"*, *"Police Only"*, *"Engine Must Be Off"*).
-- **Modular Hot-Swappable Design Packs**: Instead of being locked into a single hardcoded UI layout, `osm-target` completely decouples the presentation layer. The interface is powered by modular design packs that can be swapped live without restarting resources or modifying script code.
+- **Decoupled Presentation Layer**: The interface is not hardcoded into the targeting logic. It is a design pack discovered from `designs/` at startup, so the look can be retuned — or replaced with a pack you author yourself — without touching a line of script code.
 - **100% Drop-In Compatibility**: Zero script rewrites. Comprehensive built-in adapters provide full backwards compatibility with `ox_target`, `qb-target`, and `qtarget` exports and event structures.
 - **Live Database-Backed Administration**: Fine-tune targeting angles, raycast ranges, timings, and visual tunables in real-time with `/targetadmin`. Changes persist to MySQL without server restarts.
 
@@ -21,7 +21,7 @@ Targeting scripts have been a staple of FiveM roleplay for years, but traditiona
 
 ## Interface Design — Context Rail
 
-The interface is a hot-swappable design pack. Retune it live in `/targetadmin` — no restarts.
+This fork ships one design, **Context Rail**, and it is the only one installed. Every setting below is retuned live in `/targetadmin` and saved to the database — no resource restart. Further packs can be authored against the SDK and dropped into `designs/`; the admin panel lists whatever it finds.
 
 <table>
 <tr>
