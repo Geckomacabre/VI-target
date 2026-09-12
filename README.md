@@ -3,19 +3,21 @@
 [![License: OsmFX Source-Available](https://img.shields.io/badge/License-Source--Available%20v1.0-orange.svg?style=for-the-badge)](LICENSE)
 
 > **Modified fork notice.** This repository is a modified derivative work of
-> [`osm-target`](https://osmfxmods.com/) by **OsmFX Mods**, licensed under the
-> [OsmFX Mods Source-Available License v1.0](LICENSE). It is not an official,
-> endorsed, or supported release of OsmFX Mods — for the original script and
-> official support, see **https://osmfxmods.com/**.
+> [`osm-target`](https://github.com/OsmFX-Mods/osm-target) by **OsmFX Mods**,
+> licensed under the [OsmFX Mods Source-Available License v1.0](LICENSE). It
+> is not an official, endorsed, or supported release of OsmFX Mods — for the
+> original script and official support, see **https://osmfxmods.com/**. OsmFX
+> Mods also separately sells a commercial "Target VI" design pack at
+> [osmfxmods.com/product/7667144](https://www.osmfxmods.com/product/7667144),
+> which is a different product from this fork's `Context Rail` design pack
+> (see below).
 >
 > The bundled `Context Rail` design pack was designed by **Geckomacabre**,
 > with the assistance of Claude (Anthropic), with reference to Rockstar
 > Games' own footage — *Grand Theft Auto VI: An Extended Look* — not to
 > OsmFX Mods' commercial "Target VI" design pack. See the reference
-> screenshots below, taken from that Rockstar footage. This author's
-> `vice_hud` resource already contains a GTA VI/RDR2-style interaction
-> treatment predating this fork, which is available as evidence of
-> independent, prior development of this visual direction.
+> screenshots below, taken from that Rockstar footage, and the **Proof of
+> independent origin** section further down for dated, public prior art.
 
 A modern, world-space DUI targeting and interaction framework for FiveM. Unlike traditional screen-space target scripts, `osm-target` projects interactive surfaces directly onto entities in 3D world space with depth perception, intuitive requirement explanations, and complete drop-in compatibility for existing `ox_target`, `qb-target`, and `qtarget` scripts.
 
@@ -52,6 +54,30 @@ Build your own design packs with the React + TypeScript SDK — see [docs/design
 <td width="50%"><img width="100%" alt="GTA VI in-game interaction rail — reference 2" src="docs/media/gta6-reference-2.png" /></td>
 </tr>
 </table>
+
+### Proof of independent origin
+
+`Context Rail` (`designs/rail/design.lua`) was first committed to this repository on
+**2026-09-12** ([`7c81eed9`](https://github.com/Geckomacabre/VI-target/commit/7c81eed9)).
+Public, dated commits predating it by up to sixteen days show this author already
+building GTA VI/RDR2-referenced interaction UI, independently of this fork and of
+OsmFX Mods' "Target VI" pack:
+
+- **2026-08-27** — [`3fde643a`](https://github.com/Geckomacabre/GTA-VI-UI-and-HUD-for-FiveM/commit/3fde643a),
+  "Initial bundle: GTA VI-themed resources" — includes a GTA VI-styled reskin of
+  `ox_target`'s own menu (`patches/ox_target/web/vice-theme.css`), with a plate
+  material sampled from reference footage and a custom GTA Art Deco typeface.
+- **2026-08-31** — vice_hud baseline snapshot (`1c427e1a`), and **2026-09-05**
+  (`c2e4a602`, "ox_target: always-on GTA VI/RDR2-style prompt via vice_hud,
+  mz_textui skin") and **2026-09-10** (`fdcb7ac7`, `d6d2b4af`) — further
+  vice_hud/ox_target GTA VI-styling work. These three commits live in this
+  author's private multi-resource server repository and are available on
+  request; they are not linked here since that repository isn't public.
+
+These are reskins of `ox_target`'s own stock row-list menu, not the vertical
+rail/dot layout itself — offered here as evidence of this author's ongoing,
+independently dated GTA VI-referenced interaction-design work, not as a claim
+that the rail mechanic specifically existed before this fork.
 
 ---
 
