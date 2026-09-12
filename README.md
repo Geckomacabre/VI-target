@@ -70,6 +70,12 @@ key, with no scrolling involved:
 
 <img width="60%" alt="GTA VI in-game two-option prompt — reference" src="docs/media/gta6-reference-3.png" />
 
+The same footage also shows a third shape: a collapsed single-row prompt for
+an entity with 3+ options (bound key + a "more options" indicator) before its
+list is ever opened:
+
+<img width="60%" alt="GTA VI in-game collapsed submenu prompt — reference" src="docs/media/gta6-reference-4.png" />
+
 ### In progress: matching the reference more closely
 
 A closer pixel-level pass against the reference screenshots above turned up a
@@ -123,10 +129,28 @@ and of OsmFX Mods' "Target VI" pack:
   "Visual language: a vertical rail connects each row's marker dot... styled
   off the reference's scrollable item-select screen (the fridge frame)" —
   twelve days before `Context Rail` was ever committed to this repository.
-  Rendered directly from that unmodified source (real markup, real CSS, real
-  typeface — Belle Sans Extra Condensed Bold, per `style.css`'s own comment):
+  **Correction (2026-09-12):** the screenshot originally posted here for this
+  commit showed placeholder item labels ("Open Fridge" / "Search Shelves" /
+  "Make Coffee" / "Restock") that were hallucinated — they don't appear
+  anywhere in this repository's history and were never rendered from the
+  actual `1c427e1a` source. That was caught and is fixed below. The
+  component, markup, and CSS this section describes were and are real; only
+  that one screenshot's text was fabricated. The image below is a genuine,
+  unmodified render of `vice_hud`'s actual `html/index.html` + `style.css` +
+  `app.js` exactly as committed at `1c427e1a`, using that commit's own real
+  built-in browser-demo data (`Logger Beer` / `Lavazas Beer` / ...) — the
+  same items visible in the GTA VI reference screenshots above. The typeface
+  is plain system Helvetica/Arial (`HelveticaNeueHUD`'s `local()` fallback
+  stack, per that commit's `style.css`) — not Belle Sans, which the original
+  (also incorrect) caption claimed:
 
-  <img width="60%" alt="vice_hud's #interact rail component, 2026-08-31" src="docs/media/vice-hud-interact-rail-20260831.png" />
+  <img width="60%" alt="vice_hud's #interact rail component, genuine render at commit 1c427e1a (2026-08-31)" src="docs/media/vice-hud-interact-rail-20260831.png" />
+
+  Full-HUD context from the same genuine render, also showing this author's
+  `vice_hud` already had a Slim Jim/Smash Window world-action prompt and a
+  ring-style lockpick check at this same date:
+
+  <img width="60%" alt="vice_hud full HUD, genuine render at commit 1c427e1a (2026-08-31)" src="docs/media/vice-hud-full-hud-20260831.png" />
 
 - **2026-09-05** (`c2e4a602`, "ox_target: always-on GTA VI/RDR2-style prompt
   via vice_hud, mz_textui skin") and **2026-09-10** (`fdcb7ac7`, `d6d2b4af`) —
