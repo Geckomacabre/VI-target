@@ -19,12 +19,32 @@ local function toggleDoor(vehicle, door)
   end
 end
 
+---Whether the player actually has access to this vehicle (keys, or
+---job-shared keys) -- not just whether it happens to be unlocked right now.
+---Deliberately soft-dependent on qbx_vehiclekeys: that resource exports
+---GetIsVehicleAccessible specifically so this file can gate on it (see its
+---own comment on that export), but osm-target ships framework-agnostic and
+---must not hard-fail on a server that doesn't have qbx_vehiclekeys at all --
+---such a server has no other way to grant/revoke vehicle access in the
+---first place, so "permissive" is the only sane fallback, not "locked out".
+local function hasVehicleAccess(vehicle)
+  if GetResourceState('qbx_vehiclekeys') ~= 'started' then return true end
+
+  local ok, accessible = pcall(function()
+    return exports.qbx_vehiclekeys:GetIsVehicleAccessible(vehicle)
+  end)
+  if not ok then return true end
+
+  return accessible == true
+end
+
 ---Validate door interaction: verify distance to door bone or offset coordinates.
 local function canInteractWithDoor(entity, coords, door, useOffset)
   if not GetIsDoorValid(entity, door)
     or GetVehicleDoorLockStatus(entity) > 1
     or IsVehicleDoorDamaged(entity, door)
     or cache.vehicle
+    or not hasVehicleAccess(entity)
   then
     return false
   end

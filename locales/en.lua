@@ -68,5 +68,8 @@ Locales['en'] = {
   test_fridge_protein = 'Protein Shake',
   test_fridge_protein_reason = 'Someone finished it',
 
+  test_car_slimjim = 'Slim Jim',
+  test_car_smashwindow = 'Smash Window',
+
   version_outdated = 'osm-target %s is available (running %s).',
 }

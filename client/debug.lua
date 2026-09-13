@@ -349,6 +349,33 @@ local function fridgeOptions()
   }
 end
 
+---Generate two-option test options: exercises the 'direct' multi-key prompt
+---(1-2 plain options, shown at once, each its own key) -- the one render
+---path neither the default nor fridge test variant ever reaches, since both
+---resolve to 3+ options. Mirrors qbx_vehiclekeys' own Slim Jim/Smash Window
+---shape (two plain options, no openMenu) so this is what actually exercises
+---that path before a real locked/keyless vehicle is available to test with.
+local function carOptions()
+  local function announce(label)
+    return function() Bridge.Notify(Locale('test_selected', label), 'inform') end
+  end
+
+  return {
+    {
+      name = 'osm:test:car:slimjim',
+      label = Locale('test_car_slimjim'),
+      icon = 'screwdriver',
+      onSelect = announce(Locale('test_car_slimjim')),
+    },
+    {
+      name = 'osm:test:car:smashwindow',
+      label = Locale('test_car_smashwindow'),
+      icon = 'hammer',
+      onSelect = announce(Locale('test_car_smashwindow')),
+    },
+  }
+end
+
 local function removeTestSubject()
   if not testPed then return false end
 
@@ -362,7 +389,7 @@ local function removeTestSubject()
 end
 
 ---Spawn test subject: create test ped carrying representative options.
----@param variant string? 'fridge' or standard
+---@param variant string? 'fridge' | 'car' | standard
 function Debug.spawnTestSubject(variant)
   removeTestSubject()
 
@@ -391,7 +418,10 @@ function Debug.spawnTestSubject(variant)
   SetPedCanRagdoll(testPed, false)
   SetPedDiesWhenInjured(testPed, false)
 
-  Api.addLocalEntity(testPed, variant == 'fridge' and fridgeOptions() or testOptions())
+  local options = testOptions()
+  if variant == 'fridge' then options = fridgeOptions()
+  elseif variant == 'car' then options = carOptions() end
+  Api.addLocalEntity(testPed, options)
   Bridge.Notify(Locale('test_spawned', Config.Commands.test), 'success')
 end
 
