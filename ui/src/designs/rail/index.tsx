@@ -746,7 +746,12 @@ function CollapsedPrompt({ left, x, opacity, move, label, glyph, confirm, gated,
       }}
     >
       <div style={{ width: LABEL_GAP, flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
-        <Node focused enabled gated={gated} confirm={confirm} glyph={glyph} />
+        {/* Always 'auto' here, ignoring the admin's confirmGlyph style choice
+         *  for the shared rail cursor: a forced 'cross' look is fine when
+         *  there's only ever one confirm action, but this row's whole job is
+         *  showing WHICH key opens the list, so the real bound key has to
+         *  win over a generic style preference. */}
+        <Node focused enabled gated={gated} confirm="auto" glyph={glyph} />
       </div>
 
       <SubmenuDots size={30} />
@@ -809,11 +814,16 @@ function DirectPrompt({
           shadow={shadow}
           labelStyle={option.enabled ? undefined : gatedLabel(gated)}
           node={
+            // Always 'auto', not the admin's shared confirmGlyph style choice --
+            // see CollapsedPrompt's identical comment. It matters even more
+            // here: two DIFFERENT options forced to the same generic 'cross'
+            // look are indistinguishable, defeating the entire point of
+            // showing each option's own key.
             <Node
               focused
               enabled={option.enabled}
               gated={gated}
-              confirm={confirm}
+              confirm="auto"
               glyph={resolveGlyph(option.directKey, device)}
             />
           }
