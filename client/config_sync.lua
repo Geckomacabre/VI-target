@@ -9,6 +9,11 @@ Appearance = {
     volume = 70,
     muted = false,
     reducedMotion = false,
+    -- Which family of pad button art to draw ('xbox' | 'playstation').
+    -- GetControlInstructionalButton cannot tell the two apart on its own (see
+    -- client/target/input.lua's labelFor) -- this is a player preference, not
+    -- a detection, same reasoning as every other prefs field here.
+    padBrand = 'xbox',
   },
 }
 

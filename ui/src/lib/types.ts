@@ -78,11 +78,17 @@ export interface AppearancePayload {
   timings: { open: number; close: number }
 }
 
+/** Which family of pad button art to draw. GetControlInstructionalButton
+ *  cannot tell Xbox and PlayStation apart on its own (see InputPrompts'
+ *  own comment) -- this is a player preference, not a detection. */
+export type PadBrand = 'xbox' | 'playstation'
+
 export interface Preferences {
   scale: number
   volume: number
   muted: boolean
   reducedMotion: boolean
+  padBrand: PadBrand
 }
 
 /** Tunable configuration key-value map. */
@@ -159,16 +165,24 @@ export interface DesignRuntime {
 export type InputDevice = 'kbm' | 'pad'
 
 /**
- * The player's live bindings, resolved in Lua from
- * GetControlInstructionalButton so a design can draw the button actually bound
- * rather than a fixed glyph. Pad labels are tokens for GTA's own button font,
- * which does not exist in a CEF frame - a design maps the ones it knows onto
- * renderable characters and falls back to a neutral mark for the rest.
+ * The player's live bindings. On keyboard/mouse this is genuine resolved text
+ * from GetControlInstructionalButton (a letter, "LMB", etc). On a pad it is
+ * NOT: confirmed live against a real controller (2026-09-13) that native
+ * returns an opaque internal button-icon code for face buttons ("b_2000" for
+ * INPUT_FRONTEND_X, "b_1002" for INPUT_FRONTEND_Y, even "b_1003" for
+ * INPUT_FRONTEND_ACCEPT), not resolvable text - so for a pad, `confirm`/
+ * `cancel`/each option's own `directKey` (see TargetOption) instead carry a
+ * `CTRL_<id>` sentinel (client/target/input.lua's labelFor), and this design
+ * maps the ids it has real art for (CONTROL_ICONS) rather than trying to
+ * print anything from the native's own text.
  */
 export interface InputPrompts {
   device: InputDevice
   confirm: string
   cancel: string
+  /** Which family of art to use for a `CTRL_<id>` sentinel. Meaningless on
+   *  keyboard/mouse, where `confirm`/`cancel`/`directKey` are already text. */
+  padBrand: PadBrand
 }
 
 export interface MenuViewProps extends DesignRuntime {

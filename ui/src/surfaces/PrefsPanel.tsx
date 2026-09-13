@@ -54,6 +54,21 @@ export function PrefsPanel({ initial, onClose }: Props) {
               <Toggle checked={prefs.muted} onChange={(v) => set('muted', v)} />
             </Field>
           </div>
+
+          <div className="h-5" />
+
+          <SectionTitle>Controller</SectionTitle>
+          <div className="divide-y divide-white/[0.04]">
+            <Field
+              label="PlayStation button icons"
+              help="Controls only draw the button actually bound (GetControlInstructionalButton has no way to tell Xbox and PlayStation apart on its own)."
+            >
+              <Toggle
+                checked={prefs.padBrand === 'playstation'}
+                onChange={(v) => set('padBrand', v ? 'playstation' : 'xbox')}
+              />
+            </Field>
+          </div>
         </div>
       </div>
     </div>

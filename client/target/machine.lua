@@ -107,7 +107,7 @@ local function sendMenu()
 
   if menuMode == 'direct' then
     for i = 1, #payload do
-      payload[i].directKey = Input.directKeyLabel(i)
+      payload[i].directKey = Input.directKeyLabel(i, resolved[i] and resolved[i].option.name)
     end
   end
 
@@ -701,7 +701,16 @@ function Machine.start()
         local delta = Input.scrollDelta()
         if delta ~= 0 then moveFocus(delta) end
         if Input.confirmPressed() then confirm() end
-        if Input.cancelPressed() then Machine.cancel() end
+
+        -- Cancel is skipped here, not suppressed globally, when a direct-mode
+        -- option's own key happens to double as the shared cancel button --
+        -- Slim Jim/Smash Window's Circle/B is exactly this (see config.lua's
+        -- directKeyByName comment). Suppressing 194 in Config.Input.suppress
+        -- would break Circle/B as cancel on every OTHER menu; skipping the
+        -- check only while this specific mode is showing does not. Backing
+        -- out of a direct prompt is done by aiming away from the target,
+        -- same as the reference has no separate "back" affordance here.
+        if menuMode ~= 'direct' and Input.cancelPressed() then Machine.cancel() end
 
         -- 'direct' additionally answers to each option's own dedicated key,
         -- independently of the shared cursor above, so every option really is
@@ -709,7 +718,7 @@ function Machine.start()
         -- first.
         if menuMode == 'direct' then
           for i = 1, #resolved do
-            if Input.directKeyPressed(i) then
+            if Input.directKeyPressed(i, resolved[i].option.name) then
               if i ~= focus then
                 focus = i
                 sendFocus()

@@ -35,7 +35,7 @@ function defaultDesignTunables(): Record<string, Tunables> {
   return out
 }
 
-export const MOCK_PREFS: Preferences = { scale: 100, volume: 70, muted: false, reducedMotion: false }
+export const MOCK_PREFS: Preferences = { scale: 100, volume: 70, muted: false, reducedMotion: false, padBrand: 'xbox' }
 
 const store: { config: StoredConfig } = {
   config: {

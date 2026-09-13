@@ -84,6 +84,9 @@ function Nui.loadPrefs()
   Appearance.prefs.volume = tonumber(decoded.volume) or Appearance.prefs.volume
   Appearance.prefs.reducedMotion = decoded.reducedMotion and true or false
   Appearance.prefs.muted = decoded.muted and true or false
+  if decoded.padBrand == 'xbox' or decoded.padBrand == 'playstation' then
+    Appearance.prefs.padBrand = decoded.padBrand
+  end
 end
 
 local function savePrefs()
@@ -96,6 +99,7 @@ RegisterNUICallback('savePrefs', function(data, cb)
     if data.volume then Appearance.prefs.volume = math.max(0, math.min(100, tonumber(data.volume) or 70)) end
     if data.reducedMotion ~= nil then Appearance.prefs.reducedMotion = data.reducedMotion and true or false end
     if data.muted ~= nil then Appearance.prefs.muted = data.muted and true or false end
+    if data.padBrand == 'xbox' or data.padBrand == 'playstation' then Appearance.prefs.padBrand = data.padBrand end
 
     savePrefs()
     Surfaces.applyAppearance()

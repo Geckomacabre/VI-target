@@ -164,7 +164,7 @@ export function DesignPreview({ designId, tunables, manifest, stage, onStage, wi
               // The preview has no game to read a binding from, so it stands in
               // for a keyboard player: designs drawing the live bind show
               // something representative instead of falling back.
-              input={{ device: 'kbm', confirm: 'MOUSE1', cancel: 'MOUSE2' }}
+              input={{ device: 'kbm', confirm: 'MOUSE1', cancel: 'MOUSE2', padBrand: 'xbox' }}
               tunables={tunables}
               reducedMotion={false}
               openMs={220}

@@ -179,15 +179,35 @@ local function primary(entry)
   return list
 end
 
+---FIXED 2026-09-13 (first real controller test): GetControlInstructionalButton
+---does NOT reliably return text for a pad. Confirmed live via the mcpb bridge
+---against a real controller, not guessed: control 51 (keyboard E) returns
+---"t_E" (sub(3) -> "E", the assumed format) but control 203 returns "b_2000",
+---204 returns "b_1002", and even 201 (confirm/A/Cross) returns "b_1003" -- an
+---opaque internal button-ICON reference, not text, for every pad face button
+---tested. sub(3) on those just strips "b_" and hands the design a meaningless
+---digit string ("2000"/"1002"/"1003"), which is what actually showed up
+---on-screen as raw numbers instead of a button glyph.
+---
+---There is no text to extract from that format, so pad no longer tries: it
+---hands the design the raw control id itself (a design cannot draw a numeric
+---control id as a "glyph" the way it draws a keyboard letter, but it CAN look
+---up real button art by id -- see BUTTON_ICONS / CONTROL_ICONS in
+---ui/src/designs/rail/index.tsx, keyed by exactly this sentinel). Keyboard is
+---untouched: "t_"-prefixed text was already correct and still is.
 local function labelFor(entry)
   local control = primary(entry)
   if not control then return '' end
+
+  if usingPad() then
+    return 'CTRL_' .. tostring(control)
+  end
 
   local label = GetControlInstructionalButton(0, control, true)
   return label and label:sub(3) or ''
 end
 
-local prompts = { device = '', confirm = '', cancel = '' }
+local prompts = { device = '', confirm = '', cancel = '', padBrand = 'xbox' }
 local nextPromptCheck = 0
 
 ---Resolve the prompts and push them to the surfaces, but only when something
@@ -201,12 +221,19 @@ function Input.syncPrompts(now)
   local device = usingPad() and 'pad' or 'kbm'
   local confirm = labelFor(Config.Input.confirm)
   local cancel = labelFor(Config.Input.cancel)
+  -- Which family of button art CTRL_* sentinels above should resolve to --
+  -- GetControlInstructionalButton cannot tell Xbox and PlayStation apart on
+  -- its own (see labelFor's own comment: it returns an opaque id, not brand-
+  -- aware text, for a pad), so this is a player preference, not a detection.
+  local padBrand = Appearance.prefs.padBrand or 'xbox'
 
-  if device == prompts.device and confirm == prompts.confirm and cancel == prompts.cancel then
+  if device == prompts.device and confirm == prompts.confirm and cancel == prompts.cancel
+    and padBrand == prompts.padBrand
+  then
     return
   end
 
-  prompts = { device = device, confirm = confirm, cancel = cancel }
+  prompts = { device = device, confirm = confirm, cancel = cancel, padBrand = padBrand }
   Surfaces.broadcast('input', prompts)
 end
 
@@ -228,17 +255,22 @@ end
 ]]
 
 ---@param poolIndex number 1-based position of the option in the resolved list
----@return string label live binding text, or '' when the pool has nothing at that position
-function Input.directKeyLabel(poolIndex)
-  local entry = Config.Input.directOptionKeys[poolIndex]
+---@param name string? the option's own `name`, checked against
+---  Config.Input.directKeyByName BEFORE falling back to pool position -- see
+---  that table's comment in config.lua for why a fixed identity beats "first
+---  or second in the list" for some options.
+---@return string label live binding text, or '' when nothing is bound
+function Input.directKeyLabel(poolIndex, name)
+  local entry = (name and Config.Input.directKeyByName[name]) or Config.Input.directOptionKeys[poolIndex]
   if not entry then return '' end
   return labelFor(entry)
 end
 
 ---@param poolIndex number
+---@param name string? see Input.directKeyLabel
 ---@return boolean pressed
-function Input.directKeyPressed(poolIndex)
-  local entry = Config.Input.directOptionKeys[poolIndex]
+function Input.directKeyPressed(poolIndex, name)
+  local entry = (name and Config.Input.directKeyByName[name]) or Config.Input.directOptionKeys[poolIndex]
   if not entry then return false end
   return pressed(controlsFor(entry))
 end

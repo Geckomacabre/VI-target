@@ -37,23 +37,31 @@ const ROOM = 1024 * 0.84 - 40
 
 const NODE = 52
 
-/* Pad labels arrive as tokens for GTA's own button font, which does not exist
-   inside a CEF frame: rendered verbatim they are tofu boxes. Map the ones worth
-   recognising onto real characters, and refuse to print anything that is not
-   plain ASCII rather than drawing garbage in the player's face. */
-const PAD_GLYPHS: Record<string, string> = {
-  A: 'A', B: 'B', X: 'X', Y: 'Y',
-  BUTTON_A: 'A', BUTTON_B: 'B', BUTTON_X: 'X', BUTTON_Y: 'Y',
-  PAD_A: 'A', PAD_B: 'B', PAD_X: 'X', PAD_Y: 'Y',
-  CROSS: '✕', CIRCLE: '◯', SQUARE: '□', TRIANGLE: '△',
-  DPAD_UP: '↑', DPAD_DOWN: '↓', DPAD_LEFT: '←', DPAD_RIGHT: '→',
-  UP: '↑', DOWN: '↓', LEFT: '←', RIGHT: '→',
-  LB: 'LB', RB: 'RB', LT: 'LT', RT: 'RT',
-  L1: 'L1', R1: 'R1', L2: 'L2', R2: 'R2', L3: 'L3', R3: 'R3',
-  LEFT_SHOULDER: 'LB', RIGHT_SHOULDER: 'RB',
-  LEFT_TRIGGER: 'LT', RIGHT_TRIGGER: 'RT',
-  LEFT_STICK: 'L3', RIGHT_STICK: 'R3',
-  START: '≡', SELECT: '❐', BACK: '❐',
+/* FIXED 2026-09-13 (first real controller test): GetControlInstructionalButton
+   does not return resolvable text for a pad -- confirmed live via the mcpb
+   bridge against a real controller, not guessed. Control 203 (INPUT_FRONTEND_X)
+   returned "b_2000", 204 (INPUT_FRONTEND_Y) "b_1002", even 201 (confirm/A/Cross)
+   "b_1003" -- an opaque internal button-icon reference, never the "X"/"SQUARE"
+   text this file used to assume. On screen that showed up as raw digits (the
+   "b_" stripped off, leaving a meaningless number) instead of a button glyph.
+
+   client/target/input.lua's labelFor now hands this file a `CTRL_<id>`
+   sentinel for a pad instead of trying to extract text from that native at
+   all. There is no brand-aware text to key art off any more either --
+   Xbox/PlayStation is a player preference now (InputPrompts.padBrand), not
+   something derived from the binding. Keyboard/mouse is UNCHANGED: those
+   still arrive as genuine text ("E", "LMB", ...) and still go through
+   normalise()/PAD_GLYPHS... except pad no longer does, hence the rename. */
+
+const CTRL_PATTERN = /^CTRL_(\d+)$/
+
+/** Every control id this design has a fallback drawn glyph for when the
+ *  player's real hardware differs from the connected controller this session
+ *  tested against, or for a control this design ships no art for at all
+ *  (there is no reason a keycap can't ALSO draw digits -- it is just worse
+ *  than real art, which every control listed in CONTROL_ICONS below has). */
+const CTRL_GLYPHS: Record<number, string> = {
+  201: 'A', 202: 'B', 203: 'X', 204: 'Y', 194: 'B',
 }
 
 const normalise = (label: string) =>
@@ -64,16 +72,18 @@ const renderable = (value: string) => /^[ -~]+$/.test(value)
 
 /** The characters to draw for a raw binding label, or null when there is
  *  nothing bound. Shared by the rail's own confirm glyph and, for the direct
- *  multi-key prompt, each option's own independently bound key - both are
- *  live `GetControlInstructionalButton` text, just read from a different spot
- *  in the payload. */
+ *  multi-key prompt, each option's own independently bound key. On keyboard/
+ *  mouse this is genuine live-resolved text; on a pad it is CTRL_GLYPHS'
+ *  fallback letter for a known control id, since there is nothing else to
+ *  draw (see this file's header comment on why). */
 function resolveGlyph(label: string | undefined, device: InputDevice | undefined): string | null {
   const trimmed = label?.trim()
   if (!trimmed) return null
 
   if (device === 'pad') {
-    const mapped = PAD_GLYPHS[normalise(trimmed)]
-    if (mapped) return mapped
+    const ctrl = CTRL_PATTERN.exec(trimmed)
+    if (ctrl) return CTRL_GLYPHS[Number(ctrl[1])] ?? '•'
+    return '•' // unrecognised sentinel shape - never draw whatever this actually was
   }
 
   return renderable(trimmed) ? trimmed : '•'
@@ -84,23 +94,16 @@ function glyphFor(input: InputPrompts | undefined): string | null {
   return resolveGlyph(input?.confirm, input?.device)
 }
 
-/* Real button art, keyed the same way PAD_GLYPHS is: by the normalised token
-   GetControlInstructionalButton's text resolves to. Covers exactly the pad
-   face buttons and mouse clicks this design pack ships art for -- everything
-   else (L1/R1/triggers/d-pad/start/select, and every keyboard key) keeps
-   falling through to resolveGlyph's drawn-text path above, untouched.
-
-   Xbox vs PlayStation is not something this file detects: the SAME
-   underlying control (e.g. INPUT_FRONTEND_X, control 203) already arrives as
-   the token "X" on an Xbox pad and "SQUARE" on a PlayStation one -- that's
-   the live binding text FiveM hands back, matching what PAD_GLYPHS already
-   relies on for its text fallback. Both tokens are just keyed to their own
-   piece of art here. */
-const BUTTON_ICONS: Record<string, string> = {
-  A: xboxA, B: xboxB, X: xboxX, Y: xboxY,
-  BUTTON_A: xboxA, BUTTON_B: xboxB, BUTTON_X: xboxX, BUTTON_Y: xboxY,
-  PAD_A: xboxA, PAD_B: xboxB, PAD_X: xboxX, PAD_Y: xboxY,
-  CROSS: psCross, CIRCLE: psCircle, SQUARE: psSquare, TRIANGLE: psTriangle,
+/* Real button art, keyed by the SAME control ids CTRL_GLYPHS answers for, one
+   entry per brand. Every control this design binds to anything (confirm/
+   cancel/the two direct-prompt actions) has full art on both brands -- there
+   is no face button in play here without a matching icon pair. */
+const CONTROL_ICONS: Record<number, { xbox: string; playstation: string }> = {
+  201: { xbox: xboxA, playstation: psCross },
+  202: { xbox: xboxB, playstation: psCircle },
+  203: { xbox: xboxX, playstation: psSquare },
+  204: { xbox: xboxY, playstation: psTriangle },
+  194: { xbox: xboxB, playstation: psCircle }, // same physical button as 202 (cancel)
 }
 
 /* The dev preview's own stand-in for a real bind (see DesignPreview.tsx,
@@ -109,7 +112,9 @@ const BUTTON_ICONS: Record<string, string> = {
    a mouse click actually looks like, since a text label was clearly always
    the plan for it (renderable() lets it through as literal characters
    already). A few obvious synonyms are covered too in case a live binding
-   spells it differently than the preview's guess. */
+   spells it differently than the preview's guess. Keyboard/mouse text is
+   genuine (unlike pad's CTRL_* sentinel), so this still keys off the
+   resolved word itself. */
 const MOUSE_ICONS: Record<string, string> = {
   MOUSE1: lmbIcon, MOUSE_LEFT: lmbIcon, LMB: lmbIcon, M1: lmbIcon,
   MOUSE2: rmbIcon, MOUSE_RIGHT: rmbIcon, RMB: rmbIcon, M2: rmbIcon,
@@ -117,19 +122,27 @@ const MOUSE_ICONS: Record<string, string> = {
 
 /** The image to draw for a raw binding label, or null when there is no art
  *  for it -- in which case the caller falls back to resolveGlyph's text.
- *  Reads the exact same `label`/`device` pair resolveGlyph does, so a design
- *  pack call site can ask both and pick whichever comes back non-null. */
-function resolveButtonIcon(label: string | undefined, device: InputDevice | undefined): string | null {
+ *  `padBrand` only matters on a pad; pass `input?.padBrand` (or the option
+ *  row's own, they're the same value) through unchanged. */
+function resolveButtonIcon(
+  label: string | undefined, device: InputDevice | undefined, padBrand: 'xbox' | 'playstation' | undefined,
+): string | null {
   const trimmed = label?.trim()
   if (!trimmed) return null
 
-  const key = normalise(trimmed)
-  return (device === 'pad' ? BUTTON_ICONS[key] : MOUSE_ICONS[key]) ?? null
+  if (device === 'pad') {
+    const ctrl = CTRL_PATTERN.exec(trimmed)
+    if (!ctrl) return null
+    const icons = CONTROL_ICONS[Number(ctrl[1])]
+    return icons ? icons[padBrand === 'playstation' ? 'playstation' : 'xbox'] : null
+  }
+
+  return MOUSE_ICONS[normalise(trimmed)] ?? null
 }
 
 /** The image for the rail's shared confirm binding, mirroring glyphFor. */
 function iconFor(input: InputPrompts | undefined): string | null {
-  return resolveButtonIcon(input?.confirm, input?.device)
+  return resolveButtonIcon(input?.confirm, input?.device, input?.padBrand)
 }
 
 function Menu({
@@ -239,6 +252,7 @@ function Menu({
           gated={gated}
           confirm={confirm}
           device={input?.device}
+          padBrand={input?.padBrand}
           shadow={shadow}
         />
       </div>
@@ -817,7 +831,7 @@ interface CollapsedPromptProps {
  *  Pressing that key is what swaps this for the ordinary scrolling list --
  *  the host just starts sending `mode: 'list'` on the next `menu:open`, so
  *  there is nothing here to drive that transition beyond rendering it. */
-function CollapsedPrompt({ left, x, opacity, move, label, glyph, icon, confirm, gated, shadow }: CollapsedPromptProps) {
+function CollapsedPrompt({ left, x, opacity, move, label, glyph, icon, gated, shadow }: CollapsedPromptProps) {
   return (
     <div
       style={{
@@ -874,6 +888,7 @@ interface DirectPromptProps {
   gated: DisabledStyle
   confirm: string
   device: InputDevice | undefined
+  padBrand: 'xbox' | 'playstation' | undefined
   shadow: string
 }
 
@@ -883,7 +898,7 @@ interface DirectPromptProps {
  *  glyph table the rail's own confirm node uses, just read per-option instead
  *  of off the one shared `input.confirm`. */
 function DirectPrompt({
-  options, left, x, entering, closing, move, stagger, rowGap, listWidth, lines, gated, confirm, device, shadow,
+  options, left, x, entering, closing, move, stagger, rowGap, listWidth, lines, gated, device, padBrand, shadow,
 }: DirectPromptProps) {
   const span = ((options.length - 1) / 2) * rowGap
 
@@ -916,7 +931,7 @@ function DirectPrompt({
               gated={gated}
               confirm="auto"
               glyph={resolveGlyph(option.directKey, device)}
-              icon={resolveButtonIcon(option.directKey, device)}
+              icon={resolveButtonIcon(option.directKey, device, padBrand)}
             />
           }
         />

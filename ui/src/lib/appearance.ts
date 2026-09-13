@@ -3,7 +3,7 @@ import { useNuiEvent } from './useNuiEvent'
 import { surfaceParams } from './nui'
 import type { AppearancePayload, DesignFont, DesignManifestEntry, Preferences, Tunables } from './types'
 
-const DEFAULT_PREFS: Preferences = { scale: 100, volume: 70, muted: false, reducedMotion: false }
+const DEFAULT_PREFS: Preferences = { scale: 100, volume: 70, muted: false, reducedMotion: false, padBrand: 'xbox' }
 
 /** Convert hex color string to RGB comma-separated values. */
 export function hexToRgb(hex: string): string {

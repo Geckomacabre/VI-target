@@ -146,14 +146,42 @@ Config.Input = {
   -- isn't a reason to leave pad off the direct prompt entirely when a
   -- fully-covered pair of buttons was available right now.
   --
-  -- Still a config-level pool, not a per-option registration API: a caller
-  -- cannot yet ask for "always bind Slim Jim to E specifically," only get
-  -- whichever pool entry lines up with its position in the resolved list.
-  -- See docs/design-packs.md / the README for why that's a documented
-  -- follow-up rather than solved here.
+  -- Positional pool, kept as the fallback for any 'direct' pair that has not
+  -- opted into a fixed identity below (osm:test:car's debug dummy, or any
+  -- future 1-2 option case nobody has named yet).
   directOptionKeys = {
     { kbm = { 51 }, pad = { 203 } },  -- E (INPUT_CONTEXT) / X, Square (INPUT_FRONTEND_X)
     { kbm = { 47 }, pad = { 204 } },  -- G (INPUT_DETONATE) / Y, Triangle (INPUT_FRONTEND_Y)
+  },
+
+  -- ADDED 2026-09-13: fixed per-option identity, looked up by the option's own
+  -- `name` before directOptionKeys' pool position is even considered (see
+  -- Input.directKeyLabel/directKeyPressed). The pool above answers "whichever
+  -- option ended up first/second in the resolved list gets this key" -- fine
+  -- until two callers register options whose ORDER isn't guaranteed (one
+  -- resource's canInteract can hide/show independently of the other's), or
+  -- until a specific action needs a specific real-world button regardless of
+  -- position. Slim Jim / Smash Window is exactly that: the GTA VI trailer this
+  -- whole target system is modeled on shows Triangle for Slim Jim and Circle
+  -- for Smash Window specifically, on PlayStation (Y / B on Xbox) -- not
+  -- "whichever is first."
+  --
+  -- Keyboard keeps the E binding already verified live in-game for Slim Jim
+  -- (Config.Input.directOptionKeys' old pool position 1) rather than
+  -- reshuffling something already confirmed working; only the pad side is a
+  -- real fix here, since the trailer reference is pad-specific to begin with.
+  --
+  -- Smash Window's pad button (194) is the SAME control id as Config.Input.
+  -- cancel.pad (B/Circle already means "back out of the menu" everywhere
+  -- else) -- deliberately not suppressed globally, since cancel has to keep
+  -- working for every OTHER menu. client/target/machine.lua's MENU_OPEN loop
+  -- skips the ordinary Input.cancelPressed() check specifically while
+  -- menuMode == 'direct' instead, so Circle only ever means Smash Window on
+  -- this one prompt -- backing out of it is done by aiming away from the car,
+  -- same as the trailer has no separate "back" affordance on this prompt.
+  directKeyByName = {
+    ['qbx_vehiclekeys:slimjim']     = { kbm = { 51 }, pad = { 204 } }, -- E / Y, Triangle
+    ['qbx_vehiclekeys:smashwindow'] = { kbm = { 47 }, pad = { 194 } }, -- G / B, Circle (== cancel.pad)
   },
 
   -- Control suppression: disable weapon and vehicle cycling during interaction.
