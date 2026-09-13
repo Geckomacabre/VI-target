@@ -10,19 +10,18 @@ import type {
   ReactNode, TargetOption,
 } from '@host'
 
-/* Real button art for the live bindings PAD_GLYPHS/resolveGlyph below already
-   resolve as text. Vite inlines every one of these as a base64 data: URI at
-   build time (see assetsInlineLimit in vite.design.config.ts) rather than
-   emitting separate files -- a design pack ships as exactly one design.js,
-   so there is nowhere else for an asset file to live. */
-import xboxA from './assets/xbox_a.png'
-import xboxB from './assets/xbox_b.png'
-import xboxX from './assets/xbox_x.png'
-import xboxY from './assets/xbox_y.png'
-import psCross from './assets/ps_cross.png'
-import psCircle from './assets/ps_circle.png'
-import psSquare from './assets/ps_square.png'
-import psTriangle from './assets/ps_triangle.png'
+/* Mouse-click art only. Vite inlines this as a base64 data: URI at build time
+   (see assetsInlineLimit in vite.design.config.ts) rather than emitting a
+   separate file -- a design pack ships as exactly one design.js, so there is
+   nowhere else for an asset file to live.
+
+   REMOVED 2026-09-13 (user feedback after seeing it live): pad face buttons
+   used to draw real Xbox/PlayStation icon art here too (xbox_a/b/x/y.png,
+   ps_cross/circle/square/triangle.png). Explicit call after seeing it
+   in-game: "XBOX icons should be text like KBM icons so X,A,B,Y" -- pad now
+   draws the same plain drawn-letter treatment keyboard already does (see
+   CTRL_GLYPHS below), not icon art. Mouse clicks are unaffected: LMB/RMB art
+   was never part of that feedback. */
 import lmbIcon from './assets/lmb.png'
 import rmbIcon from './assets/rmb.png'
 
@@ -47,21 +46,26 @@ const NODE = 52
 
    client/target/input.lua's labelFor now hands this file a `CTRL_<id>`
    sentinel for a pad instead of trying to extract text from that native at
-   all. There is no brand-aware text to key art off any more either --
-   Xbox/PlayStation is a player preference now (InputPrompts.padBrand), not
-   something derived from the binding. Keyboard/mouse is UNCHANGED: those
-   still arrive as genuine text ("E", "LMB", ...) and still go through
-   normalise()/PAD_GLYPHS... except pad no longer does, hence the rename. */
+   all. Xbox/PlayStation is a player preference (InputPrompts.padBrand), not
+   something derived from the binding -- CTRL_GLYPHS below picks the drawn
+   letter/symbol per brand. Keyboard/mouse is UNCHANGED: those still arrive
+   as genuine text ("E", "LMB", ...). */
 
 const CTRL_PATTERN = /^CTRL_(\d+)$/
 
-/** Every control id this design has a fallback drawn glyph for when the
- *  player's real hardware differs from the connected controller this session
- *  tested against, or for a control this design ships no art for at all
- *  (there is no reason a keycap can't ALSO draw digits -- it is just worse
- *  than real art, which every control listed in CONTROL_ICONS below has). */
-const CTRL_GLYPHS: Record<number, string> = {
-  201: 'A', 202: 'B', 203: 'X', 204: 'Y', 194: 'B',
+/** The plain character to draw for a known control id, per pad brand --
+ *  REMOVED 2026-09-13's real button art in favour of this after seeing it
+ *  in-game ("XBOX icons should be text like KBM icons so X,A,B,Y"): a pad
+ *  now gets the same plain drawn-letter keycap treatment keyboard already
+ *  has, not an image. PlayStation gets the equivalent shape glyphs a
+ *  controller box would print (✕ ◯ □ △) rather than spelling the word out,
+ *  same convention this file used before pad art existed at all. */
+const CTRL_GLYPHS: Record<number, { xbox: string; playstation: string }> = {
+  201: { xbox: 'A', playstation: '✕' },
+  202: { xbox: 'B', playstation: '◯' },
+  203: { xbox: 'X', playstation: '□' },
+  204: { xbox: 'Y', playstation: '△' },
+  194: { xbox: 'B', playstation: '◯' }, // same physical button as 202 (cancel)
 }
 
 const normalise = (label: string) =>
@@ -74,16 +78,18 @@ const renderable = (value: string) => /^[ -~]+$/.test(value)
  *  nothing bound. Shared by the rail's own confirm glyph and, for the direct
  *  multi-key prompt, each option's own independently bound key. On keyboard/
  *  mouse this is genuine live-resolved text; on a pad it is CTRL_GLYPHS'
- *  fallback letter for a known control id, since there is nothing else to
- *  draw (see this file's header comment on why). */
-function resolveGlyph(label: string | undefined, device: InputDevice | undefined): string | null {
+ *  letter/symbol for a known control id, brand-picked, since there is no
+ *  resolvable text for a pad at all (see this file's header comment). */
+function resolveGlyph(
+  label: string | undefined, device: InputDevice | undefined, padBrand: 'xbox' | 'playstation' | undefined,
+): string | null {
   const trimmed = label?.trim()
   if (!trimmed) return null
 
   if (device === 'pad') {
     const ctrl = CTRL_PATTERN.exec(trimmed)
-    if (ctrl) return CTRL_GLYPHS[Number(ctrl[1])] ?? '•'
-    return '•' // unrecognised sentinel shape - never draw whatever this actually was
+    const glyphs = ctrl && CTRL_GLYPHS[Number(ctrl[1])]
+    return glyphs ? glyphs[padBrand === 'playstation' ? 'playstation' : 'xbox'] : '•'
   }
 
   return renderable(trimmed) ? trimmed : '•'
@@ -91,19 +97,7 @@ function resolveGlyph(label: string | undefined, device: InputDevice | undefined
 
 /** The characters to draw for the rail's shared confirm binding. */
 function glyphFor(input: InputPrompts | undefined): string | null {
-  return resolveGlyph(input?.confirm, input?.device)
-}
-
-/* Real button art, keyed by the SAME control ids CTRL_GLYPHS answers for, one
-   entry per brand. Every control this design binds to anything (confirm/
-   cancel/the two direct-prompt actions) has full art on both brands -- there
-   is no face button in play here without a matching icon pair. */
-const CONTROL_ICONS: Record<number, { xbox: string; playstation: string }> = {
-  201: { xbox: xboxA, playstation: psCross },
-  202: { xbox: xboxB, playstation: psCircle },
-  203: { xbox: xboxX, playstation: psSquare },
-  204: { xbox: xboxY, playstation: psTriangle },
-  194: { xbox: xboxB, playstation: psCircle }, // same physical button as 202 (cancel)
+  return resolveGlyph(input?.confirm, input?.device, input?.padBrand)
 }
 
 /* The dev preview's own stand-in for a real bind (see DesignPreview.tsx,
@@ -112,37 +106,25 @@ const CONTROL_ICONS: Record<number, { xbox: string; playstation: string }> = {
    a mouse click actually looks like, since a text label was clearly always
    the plan for it (renderable() lets it through as literal characters
    already). A few obvious synonyms are covered too in case a live binding
-   spells it differently than the preview's guess. Keyboard/mouse text is
-   genuine (unlike pad's CTRL_* sentinel), so this still keys off the
-   resolved word itself. */
+   spells it differently than the preview's guess. Mouse-only: a pad draws
+   CTRL_GLYPHS' plain text now, not art (see this file's header comment). */
 const MOUSE_ICONS: Record<string, string> = {
   MOUSE1: lmbIcon, MOUSE_LEFT: lmbIcon, LMB: lmbIcon, M1: lmbIcon,
   MOUSE2: rmbIcon, MOUSE_RIGHT: rmbIcon, RMB: rmbIcon, M2: rmbIcon,
 }
 
-/** The image to draw for a raw binding label, or null when there is no art
- *  for it -- in which case the caller falls back to resolveGlyph's text.
- *  `padBrand` only matters on a pad; pass `input?.padBrand` (or the option
- *  row's own, they're the same value) through unchanged. */
-function resolveButtonIcon(
-  label: string | undefined, device: InputDevice | undefined, padBrand: 'xbox' | 'playstation' | undefined,
-): string | null {
+/** The image to draw for a raw MOUSE binding label, or null when there is no
+ *  art for it (including every pad binding, which draws resolveGlyph's text
+ *  instead) -- in which case the caller falls back to resolveGlyph's text. */
+function resolveButtonIcon(label: string | undefined, device: InputDevice | undefined): string | null {
+  if (device !== 'kbm') return null
   const trimmed = label?.trim()
-  if (!trimmed) return null
-
-  if (device === 'pad') {
-    const ctrl = CTRL_PATTERN.exec(trimmed)
-    if (!ctrl) return null
-    const icons = CONTROL_ICONS[Number(ctrl[1])]
-    return icons ? icons[padBrand === 'playstation' ? 'playstation' : 'xbox'] : null
-  }
-
-  return MOUSE_ICONS[normalise(trimmed)] ?? null
+  return trimmed ? MOUSE_ICONS[normalise(trimmed)] ?? null : null
 }
 
 /** The image for the rail's shared confirm binding, mirroring glyphFor. */
 function iconFor(input: InputPrompts | undefined): string | null {
-  return resolveButtonIcon(input?.confirm, input?.device, input?.padBrand)
+  return resolveButtonIcon(input?.confirm, input?.device)
 }
 
 function Menu({
@@ -930,8 +912,8 @@ function DirectPrompt({
               enabled={option.enabled}
               gated={gated}
               confirm="auto"
-              glyph={resolveGlyph(option.directKey, device)}
-              icon={resolveButtonIcon(option.directKey, device, padBrand)}
+              glyph={resolveGlyph(option.directKey, device, padBrand)}
+              icon={resolveButtonIcon(option.directKey, device)}
             />
           }
         />
