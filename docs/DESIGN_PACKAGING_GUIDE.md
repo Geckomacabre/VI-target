@@ -81,6 +81,7 @@ export default design
 > 1. **Always import from `@host`**: Do not import `react` directly. The host runtime provides React, ReactDOM, and shared helpers via `window.OsmTargetHost`. This keeps design bundles lightweight (~10–15 kB).
 > 2. **No external CSS files**: Bundle styles via inline CSS, SVG, CSS variables, or the shared class utilities (`.world`, `.world-anchor`).
 > 3. **Stateless relative to FiveM**: Components receive active options and tunables via props from the host.
+> 4. **Images ship inlined, not as separate files**: a design pack builds to exactly one `design.js` (`vite.design.config.ts`'s `packPlugin` fails the build if anything else is emitted) — that is the only file DUI's asset-path resolution (`html/index.html`, loaded per `client/ui/surfaces.lua`) knows how to reach. Put source images under `ui/src/designs/<id>/assets/` and `import` them normally (`import icon from './assets/icon.png'`); `vite.design.config.ts` sets `build.assetsInlineLimit: Infinity` so every imported asset — regardless of size — is base64-inlined into `design.js` instead of emitted alongside it. See `ui/src/designs/rail/index.tsx`'s `BUTTON_ICONS`/`MOUSE_ICONS` for a worked example (real Xbox/PlayStation/mouse button art swapped in for the pad/mouse `resolveGlyph` text path).
 
 ### Lua Descriptor (`ui/src/designs/<id>/design.lua`)
 ```lua

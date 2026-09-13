@@ -102,40 +102,84 @@ Config.Input = {
   -- this pool, by position, so every option is its own independently and
   -- simultaneously pressable key instead of sharing one focus+confirm cursor.
   --
-  -- Keyboard only, deliberately. A pad's *frontend-safe* buttons -- ones that
-  -- do not already double as something else while free-aiming or driving --
-  -- are exactly the two INPUT_FRONTEND_ACCEPT/CANCEL already spent on
-  -- confirm/cancel above; see Input.suppress and the scrollUp/scrollDown
-  -- comments for why the d-pad and triggers are off the table too. A pad
-  -- player in the direct prompt still confirms either option: it falls back
-  -- to the ordinary scroll-to-focus-then-confirm behaviour of the scrolling
-  -- list, on the same shared cursor, just with 1-2 rows instead of many.
+  -- Pad entries were left out for a long time because the only two
+  -- *frontend-safe* pad buttons -- ones that do not already double as
+  -- something else while free-aiming or driving -- looked like exactly the
+  -- two INPUT_FRONTEND_ACCEPT/CANCEL already spent on confirm/cancel above.
+  -- That undersold what "frontend-safe" actually rules out, though: GTA's
+  -- control list (docs.fivem.net/docs/game-references/controls/) has TWO
+  -- more buttons in the same INPUT_FRONTEND_* family as accept/cancel --
   --
-  -- This is a config-level pool, not a per-option registration API: a caller
+  --   203  INPUT_FRONTEND_X   -- X (Xbox) / Square (PlayStation)
+  --   204  INPUT_FRONTEND_Y   -- Y (Xbox) / Triangle (PlayStation)
+  --
+  -- -- neither used anywhere else in this table (confirm/cancel/scrollUp/
+  -- scrollDown/padKey above, or suppress below), so they're free the same
+  -- way 201/202 (accept/cancel) already were.
+  --
+  -- "Free" only covers the id itself, not the physical button behind it --
+  -- exactly the INPUT_ATTACK/INPUT_AIM lesson from the confirm/cancel
+  -- comment above. Physical X also carries INPUT_JUMP (22) on foot; physical
+  -- Y also carries INPUT_ENTER (23, get in the nearest vehicle) and
+  -- INPUT_VEH_EXIT (75, get out of one), plus INPUT_WEAPON_SPECIAL (53) and
+  -- INPUT_DROP_WEAPON (56). INPUT_ENTER in particular would have bitten
+  -- immediately: the flagship use of this very prompt is a car door, so a
+  -- pad player pressing "Smash Window" would have also tried to get in the
+  -- car normally. All five are now in Input.suppress below, closed off the
+  -- same way INPUT_FRONTEND_ACCEPT (201) already is for confirm -- suppressed
+  -- controls still reach Input.directKeyPressed via IsDisabledControlJustPressed,
+  -- they just stop reaching the game underneath it.
+  --
+  -- L3/R3 (INPUT_FRONTEND_LS 209 / INPUT_FRONTEND_RS 210 -- also unused
+  -- elsewhere) were the other candidate: their real-world collisions
+  -- (INPUT_DUCK 36, INPUT_LOOK_BEHIND 26, INPUT_SPECIAL_ABILITY 28/29,
+  -- INPUT_ACCURATE_AIM 50) are individually milder than jump/enter-vehicle
+  -- and just as closeable via suppress. X/Y won out for a reason outside the
+  -- input system entirely: this change is also what first draws real button
+  -- art for a pad player instead of bare text (see BUTTON_ICONS in
+  -- ui/src/designs/rail/index.tsx), and the art supplied for it only covers
+  -- face buttons (Xbox X/Y/A/B, PlayStation Square/Triangle/Circle/Cross) --
+  -- nothing for a stick click. Picking L3/R3 would have meant the exact
+  -- players this change is for still seeing a generic fallback mark instead
+  -- of a real button. That gap (no stick-click art yet) is real and worth
+  -- closing later if a future change wants L3/R3 for something else, but it
+  -- isn't a reason to leave pad off the direct prompt entirely when a
+  -- fully-covered pair of buttons was available right now.
+  --
+  -- Still a config-level pool, not a per-option registration API: a caller
   -- cannot yet ask for "always bind Slim Jim to E specifically," only get
   -- whichever pool entry lines up with its position in the resolved list.
   -- See docs/design-packs.md / the README for why that's a documented
   -- follow-up rather than solved here.
   directOptionKeys = {
-    { kbm = { 51 } },  -- E (INPUT_CONTEXT)
-    { kbm = { 47 } },  -- G (INPUT_DETONATE)
+    { kbm = { 51 }, pad = { 203 } },  -- E (INPUT_CONTEXT) / X, Square (INPUT_FRONTEND_X)
+    { kbm = { 47 }, pad = { 204 } },  -- G (INPUT_DETONATE) / Y, Triangle (INPUT_FRONTEND_Y)
   },
 
   -- Control suppression: disable weapon and vehicle cycling during interaction.
   -- Suppressing a control does not stop this resource reading it -- the input
   -- layer checks IsDisabledControlJustPressed too -- so the ids used above can
   -- safely appear here, and the pad ones need to: the d-pad and A are bound to
-  -- game actions of their own that should not fire while a menu is up.
+  -- game actions of their own that should not fire while a menu is up. Same
+  -- reasoning for X and Y now that directOptionKeys uses them -- see the
+  -- comment on that table for exactly which real actions 22/23/53/56/75
+  -- share a physical button with.
   suppress = {
     14, 15,          -- Weapon wheel next / prev
     16, 17,          -- Select next / prev weapon
+    22,              -- Jump (physical X, shared with direct-prompt option 1)
+    23,              -- Enter vehicle (physical Y, shared with direct-prompt option 2)
     24, 25,          -- Attack / aim
+    53,              -- Weapon special ability (physical Y)
+    56,              -- Drop weapon (physical Y)
+    75,              -- Exit vehicle (physical Y)
     81, 82, 83, 84,  -- Vehicle radio and weapon cycling
     99, 100,         -- Vehicle select next / prev weapon
     115, 116,        -- Vehicle cycle weapon
     140, 141, 142,   -- Melee attacks
     187, 188,        -- Frontend up / down (d-pad, left stick)
     201,             -- Frontend accept (A / Cross)
+    203, 204,        -- Frontend X / Y (X-Square, Y-Triangle -- direct prompt options)
     257, 263, 264,   -- Alternate attack controls
     331,             -- Vehicle radio wheel
   },

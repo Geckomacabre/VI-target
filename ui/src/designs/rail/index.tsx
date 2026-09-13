@@ -10,6 +10,22 @@ import type {
   ReactNode, TargetOption,
 } from '@host'
 
+/* Real button art for the live bindings PAD_GLYPHS/resolveGlyph below already
+   resolve as text. Vite inlines every one of these as a base64 data: URI at
+   build time (see assetsInlineLimit in vite.design.config.ts) rather than
+   emitting separate files -- a design pack ships as exactly one design.js,
+   so there is nowhere else for an asset file to live. */
+import xboxA from './assets/xbox_a.png'
+import xboxB from './assets/xbox_b.png'
+import xboxX from './assets/xbox_x.png'
+import xboxY from './assets/xbox_y.png'
+import psCross from './assets/ps_cross.png'
+import psCircle from './assets/ps_circle.png'
+import psSquare from './assets/ps_square.png'
+import psTriangle from './assets/ps_triangle.png'
+import lmbIcon from './assets/lmb.png'
+import rmbIcon from './assets/rmb.png'
+
 /* The rail sits ON the world anchor, so the focus node marks the exact point the
    player is aimed at. Everything else is laid out away from it on the open side. */
 
@@ -66,6 +82,54 @@ function resolveGlyph(label: string | undefined, device: InputDevice | undefined
 /** The characters to draw for the rail's shared confirm binding. */
 function glyphFor(input: InputPrompts | undefined): string | null {
   return resolveGlyph(input?.confirm, input?.device)
+}
+
+/* Real button art, keyed the same way PAD_GLYPHS is: by the normalised token
+   GetControlInstructionalButton's text resolves to. Covers exactly the pad
+   face buttons and mouse clicks this design pack ships art for -- everything
+   else (L1/R1/triggers/d-pad/start/select, and every keyboard key) keeps
+   falling through to resolveGlyph's drawn-text path above, untouched.
+
+   Xbox vs PlayStation is not something this file detects: the SAME
+   underlying control (e.g. INPUT_FRONTEND_X, control 203) already arrives as
+   the token "X" on an Xbox pad and "SQUARE" on a PlayStation one -- that's
+   the live binding text FiveM hands back, matching what PAD_GLYPHS already
+   relies on for its text fallback. Both tokens are just keyed to their own
+   piece of art here. */
+const BUTTON_ICONS: Record<string, string> = {
+  A: xboxA, B: xboxB, X: xboxX, Y: xboxY,
+  BUTTON_A: xboxA, BUTTON_B: xboxB, BUTTON_X: xboxX, BUTTON_Y: xboxY,
+  PAD_A: xboxA, PAD_B: xboxB, PAD_X: xboxX, PAD_Y: xboxY,
+  CROSS: psCross, CIRCLE: psCircle, SQUARE: psSquare, TRIANGLE: psTriangle,
+}
+
+/* The dev preview's own stand-in for a real bind (see DesignPreview.tsx,
+   which has no game to read one from) is "MOUSE1" / "MOUSE2" -- the best
+   available reference for what GetControlInstructionalButton's kbm text for
+   a mouse click actually looks like, since a text label was clearly always
+   the plan for it (renderable() lets it through as literal characters
+   already). A few obvious synonyms are covered too in case a live binding
+   spells it differently than the preview's guess. */
+const MOUSE_ICONS: Record<string, string> = {
+  MOUSE1: lmbIcon, MOUSE_LEFT: lmbIcon, LMB: lmbIcon, M1: lmbIcon,
+  MOUSE2: rmbIcon, MOUSE_RIGHT: rmbIcon, RMB: rmbIcon, M2: rmbIcon,
+}
+
+/** The image to draw for a raw binding label, or null when there is no art
+ *  for it -- in which case the caller falls back to resolveGlyph's text.
+ *  Reads the exact same `label`/`device` pair resolveGlyph does, so a design
+ *  pack call site can ask both and pick whichever comes back non-null. */
+function resolveButtonIcon(label: string | undefined, device: InputDevice | undefined): string | null {
+  const trimmed = label?.trim()
+  if (!trimmed) return null
+
+  const key = normalise(trimmed)
+  return (device === 'pad' ? BUTTON_ICONS[key] : MOUSE_ICONS[key]) ?? null
+}
+
+/** The image for the rail's shared confirm binding, mirroring glyphFor. */
+function iconFor(input: InputPrompts | undefined): string | null {
+  return resolveButtonIcon(input?.confirm, input?.device)
 }
 
 function Menu({
@@ -141,6 +205,7 @@ function Menu({
           move={move}
           label={collapseLabel}
           glyph={glyphFor(input)}
+          icon={iconFor(input)}
           confirm={confirm}
           gated={gated}
           shadow={shadow}
@@ -298,6 +363,7 @@ function Menu({
                 gated={gated}
                 confirm={confirm}
                 glyph={glyphFor(input)}
+                icon={iconFor(input)}
               />
             }
           />
@@ -399,17 +465,27 @@ interface NodeProps {
   confirm: string
   /** Characters for the live binding, or null when nothing is bound. */
   glyph: string | null
+  /** Real button art for the same binding `glyph` describes, or null when
+   *  this design pack carries no art for it (see BUTTON_ICONS/MOUSE_ICONS) --
+   *  in which case `glyph` is what actually gets drawn. Takes priority over
+   *  `glyph` whenever both are non-null. */
+  icon?: string | null
 }
 
 /** The rail marker for one row. The focused node carries the confirm glyph, and
  *  a locked row swaps its dot for a padlock so the list reads as gated without
  *  the player having to scroll onto the row first. */
-function Node({ focused, enabled, gated, confirm, glyph }: NodeProps) {
+function Node({ focused, enabled, gated, confirm, glyph, icon }: NodeProps) {
   const half = NODE / 2
+
+  // Real art wins over drawn text outright: it already reads as a fully
+  // formed keycap on its own, so it does not get the same word-vs-mark
+  // sizing question `cap` below exists to answer.
+  const showIcon = enabled && confirm === 'auto' && !!icon
 
   // Anything past two characters is a word, not a button mark, so it gets a
   // keycap wide enough to hold it rather than a circle it has to fit inside.
-  const cap = enabled && confirm === 'auto' && !!glyph && glyph.length > 2
+  const cap = !showIcon && enabled && confirm === 'auto' && !!glyph && glyph.length > 2
   // Clamped to the node column. A keycap wide enough for "MOUSE1" at a
   // comfortable size is wider than the gap between the rail and the label, and
   // a mark that overlaps the word it belongs to is worse than a small one.
@@ -464,11 +540,25 @@ function Node({ focused, enabled, gated, confirm, glyph }: NodeProps) {
         <circle cx={half} cy={half} r="21" fill={enabled ? '#ffffff' : 'var(--t-disabled)'} />
       )}
 
+      {/* Real button art, drawn straight on top of the same white field the
+          text mark below would otherwise sit on -- the art is line work on a
+          transparent ground (a Xbox/PlayStation face-button ring, a mouse
+          silhouette with one half filled), the same visual language the
+          hand-drawn 'mouse' confirm style below already uses, so it reads
+          consistently against the white circle either way. */}
+      {showIcon && (
+        <image
+          href={icon!}
+          x={half - 17} y={half - 17} width={34} height={34}
+          style={{ pointerEvents: 'none' }}
+        />
+      )}
+
       {/* 'auto' draws whatever is actually bound, which is the only mark that
           stays true when the player swaps device mid-session. It falls back to
           the cross until the first prompt sync arrives, so the node is never
           an empty circle. */}
-      {enabled && confirm === 'auto' && glyph && (
+      {!showIcon && enabled && confirm === 'auto' && glyph && (
         <text
           x={half} y={half}
           textAnchor="middle" dominantBaseline="central"
@@ -716,6 +806,7 @@ interface CollapsedPromptProps {
   move: number
   label: string
   glyph: string | null
+  icon?: string | null
   confirm: string
   gated: DisabledStyle
   shadow: string
@@ -726,7 +817,7 @@ interface CollapsedPromptProps {
  *  Pressing that key is what swaps this for the ordinary scrolling list --
  *  the host just starts sending `mode: 'list'` on the next `menu:open`, so
  *  there is nothing here to drive that transition beyond rendering it. */
-function CollapsedPrompt({ left, x, opacity, move, label, glyph, confirm, gated, shadow }: CollapsedPromptProps) {
+function CollapsedPrompt({ left, x, opacity, move, label, glyph, icon, confirm, gated, shadow }: CollapsedPromptProps) {
   return (
     <div
       style={{
@@ -751,7 +842,7 @@ function CollapsedPrompt({ left, x, opacity, move, label, glyph, confirm, gated,
          *  there's only ever one confirm action, but this row's whole job is
          *  showing WHICH key opens the list, so the real bound key has to
          *  win over a generic style preference. */}
-        <Node focused enabled gated={gated} confirm="auto" glyph={glyph} />
+        <Node focused enabled gated={gated} confirm="auto" glyph={glyph} icon={icon} />
       </div>
 
       <SubmenuDots size={30} />
@@ -825,6 +916,7 @@ function DirectPrompt({
               gated={gated}
               confirm="auto"
               glyph={resolveGlyph(option.directKey, device)}
+              icon={resolveButtonIcon(option.directKey, device)}
             />
           }
         />

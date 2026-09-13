@@ -67,6 +67,15 @@ export default defineConfig({
     // Target Chromium 91 compatibility for FiveM NUI environment
     target: 'chrome91',
     cssTarget: 'chrome91',
+    // Force EVERY imported asset (button-glyph PNGs, etc.) to inline as a
+    // base64 data: URI, regardless of size. Vite's default 4kb cutoff would
+    // otherwise emit the larger ones as separate files under designs/<id>/,
+    // which the packPlugin below deliberately rejects: a design pack ships
+    // as one design.js, because that is the only file DUI's asset-path
+    // resolution (see html/index.html / client/ui/surfaces.lua) is set up to
+    // load. Assets small enough to matter here (a handful of cropped button
+    // icons, a few KB apiece) cost nothing meaningful inlined.
+    assetsInlineLimit: Infinity,
     lib: {
       entry: resolve(sourceDir, 'index.tsx'),
       formats: ['iife'],
