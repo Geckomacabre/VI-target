@@ -23,7 +23,31 @@ export interface TargetOption {
   focusable: boolean
   /** Indicates option opens a submenu. */
   submenu: boolean
+  /**
+   * Live binding label for this option's own dedicated key, resolved the same
+   * way as `InputPrompts.confirm` (raw `GetControlInstructionalButton` text,
+   * mapped through the same device-aware glyph table by the design). Only
+   * meaningful - and only ever populated by the host - when the menu payload's
+   * `mode` is `'direct'`: a 3+ option list still scrolls through one shared
+   * confirm, so it has no use for a per-row key.
+   */
+  directKey?: string
 }
+
+/**
+ * Which shape the design should render the menu as:
+ * - `'list'` - the existing scrolling rail (3+ options, or fewer with the
+ *   collapsed prompt disabled).
+ * - `'collapsed'` - a single row (bound expand key + submenu indicator +
+ *   entity label) shown before a 3+ option list is opened.
+ * - `'direct'` - every option (1-2 of them) shown at once, each with its own
+ *   independently bound `TargetOption.directKey`, no scrolling involved.
+ *
+ * Absent entirely, a design built against the original SDK 1 contract (before
+ * this field existed) should treat it as `'list'` - the only shape it already
+ * knows how to draw.
+ */
+export type MenuMode = 'list' | 'collapsed' | 'direct'
 
 export interface MenuOpenPayload {
   options: TargetOption[]
@@ -31,6 +55,11 @@ export interface MenuOpenPayload {
   menu?: string
   empty: boolean
   emptyLabel: string
+  /** Defaults to `'list'` when absent. */
+  mode?: MenuMode
+  /** Entity/menu label to print beside the collapsed prompt's key. Only sent
+   *  when `mode` is `'collapsed'`. */
+  collapseLabel?: string
 }
 
 export interface MenuFocusPayload {
@@ -151,6 +180,15 @@ export interface MenuViewProps extends DesignRuntime {
   rejectToken: number
   phase: 'opening' | 'open' | 'closing'
   emptyLabel: string
+  /**
+   * Additive since SDK 1's initial publish: absent on a payload from a host
+   * that predates it, and absent when the design pack itself is running as an
+   * older bundle only reading the fields it knows - either way, treat missing
+   * as `'list'`, the original always-a-scrolling-list behaviour.
+   */
+  mode?: MenuMode
+  /** See `MenuOpenPayload.collapseLabel`. Only meaningful when `mode` is `'collapsed'`. */
+  collapseLabel?: string
 }
 
 export interface IndicatorViewProps extends DesignRuntime {

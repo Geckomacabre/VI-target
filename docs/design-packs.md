@@ -93,6 +93,31 @@ interface DesignModule {
 
 Design components are stateless relative to Lua communication; they receive data, focus, and tunables via props and render view states accordingly.
 
+### Menu shapes (`mode`)
+
+`MenuViewProps.mode` (`'list' | 'collapsed' | 'direct'`, added after SDK 1's
+initial publish) tells `Menu` which of three shapes the current option list
+calls for, alongside the always-present `options`/`focus`:
+
+- `'list'` (or the field absent entirely) - the original scrolling rail. A
+  design built before this field existed only ever receives this shape in
+  practice and can ignore `mode` altogether; it is purely additive and does
+  not change the SDK version.
+- `'collapsed'` - the resolved list is a single option that itself opens a
+  submenu (e.g. a "Fridge" entry). `collapseLabel` carries that option's own
+  label to print. The host still drives focus/confirm on the single option
+  normally - confirming it is what swaps the payload to `'list'` for the
+  submenu underneath - so a design that ignores `collapsed` and always
+  renders its `'list'` layout will still work, just without the dedicated
+  single-row prompt.
+- `'direct'` - 1-2 options meant to be shown at once, each independently
+  pressable, rather than scrolled through. Each option in this mode carries
+  its own `TargetOption.directKey` (a live binding label, resolved the same
+  way as `InputPrompts.confirm`) instead of sharing the one focus cursor.
+
+The rail's own implementation
+(`designs/rail/index.tsx`) is the reference for reading both fields.
+
 ### Dynamic Anchor Rules (`anchorRule`)
 
 To keep world-space sprite offsets in Lua synchronized with CSS layout offsets in DUI, designs with variable opening directions declare anchor rules in data:

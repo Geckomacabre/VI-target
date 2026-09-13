@@ -97,6 +97,30 @@ Config.Input = {
     pad = { 187 },       -- D-pad / stick down (INPUT_FRONTEND_DOWN)
   },
 
+  -- Direct multi-key prompt (1-2 option entities, e.g. a car door offering
+  -- "Slim Jim" / "Smash Window"): each option in view gets its own entry from
+  -- this pool, by position, so every option is its own independently and
+  -- simultaneously pressable key instead of sharing one focus+confirm cursor.
+  --
+  -- Keyboard only, deliberately. A pad's *frontend-safe* buttons -- ones that
+  -- do not already double as something else while free-aiming or driving --
+  -- are exactly the two INPUT_FRONTEND_ACCEPT/CANCEL already spent on
+  -- confirm/cancel above; see Input.suppress and the scrollUp/scrollDown
+  -- comments for why the d-pad and triggers are off the table too. A pad
+  -- player in the direct prompt still confirms either option: it falls back
+  -- to the ordinary scroll-to-focus-then-confirm behaviour of the scrolling
+  -- list, on the same shared cursor, just with 1-2 rows instead of many.
+  --
+  -- This is a config-level pool, not a per-option registration API: a caller
+  -- cannot yet ask for "always bind Slim Jim to E specifically," only get
+  -- whichever pool entry lines up with its position in the resolved list.
+  -- See docs/design-packs.md / the README for why that's a documented
+  -- follow-up rather than solved here.
+  directOptionKeys = {
+    { kbm = { 51 } },  -- E (INPUT_CONTEXT)
+    { kbm = { 47 } },  -- G (INPUT_DETONATE)
+  },
+
   -- Control suppression: disable weapon and vehicle cycling during interaction.
   -- Suppressing a control does not stop this resource reading it -- the input
   -- layer checks IsDisabledControlJustPressed too -- so the ids used above can

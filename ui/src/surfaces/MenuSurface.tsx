@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNuiEvent } from '../lib/useNuiEvent'
 import { useAppearance } from '../lib/appearance'
 import { useDesignModule } from '../designs'
-import type { InputPrompts, MenuFocusPayload, MenuOpenPayload, TargetOption } from '../lib/types'
+import type { InputPrompts, MenuFocusPayload, MenuMode, MenuOpenPayload, TargetOption } from '../lib/types'
 
 type Phase = 'idle' | 'opening' | 'open' | 'closing'
 
@@ -16,11 +16,15 @@ export function MenuSurface() {
   const [phase, setPhase] = useState<Phase>('idle')
   const [rejectToken, setRejectToken] = useState(0)
   const [input, setInput] = useState<InputPrompts | undefined>(undefined)
+  const [mode, setMode] = useState<MenuMode>('list')
+  const [collapseLabel, setCollapseLabel] = useState('')
 
   useNuiEvent<MenuOpenPayload>('menu:open', (data) => {
     setOptions(data.options ?? [])
     setFocus(data.focus ?? 1)
     if (data.emptyLabel) setEmptyLabel(data.emptyLabel)
+    setMode(data.mode ?? 'list')
+    setCollapseLabel(data.collapseLabel ?? '')
     setPhase((current) => (current === 'open' ? 'open' : 'opening'))
   })
 
@@ -59,6 +63,8 @@ export function MenuSurface() {
         phase={phase === 'open' ? 'open' : phase === 'closing' ? 'closing' : 'opening'}
         emptyLabel={emptyLabel}
         input={input}
+        mode={mode}
+        collapseLabel={collapseLabel}
         tunables={appearance.tunables}
         reducedMotion={appearance.reducedMotion}
         openMs={appearance.openMs}

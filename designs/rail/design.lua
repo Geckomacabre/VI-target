@@ -4,7 +4,7 @@ local Designs = OsmTargetDesigns
 Designs.define {
   id = 'rail',
   sdk = 1,
-  version = '1.1.0',
+  version = '1.2.0',
   label = 'Context Rail',
   tagline = 'A vertical rail pinned to the entity. Scroll walks the rows past a fixed focus node, and locked rows say why on the spot.',
   accent = '#ffffff',
@@ -47,7 +47,7 @@ Designs.define {
         help = 'Size of the focused label against the rest of the list.' },
       { key = 'confirmGlyph', label = 'Confirm glyph', type = 'select', default = 'auto', group = 'Design',
         tier = 'basic', affects = 'menu',
-        help = 'Mark drawn inside the focused rail node. Bound key follows the player's live binding and swaps when they pick up a controller; the rest are fixed.',
+        help = "Mark drawn inside the focused rail node. Bound key follows the player's live binding and swaps when they pick up a controller; the rest are fixed.",
         options = {
           { value = 'auto', label = 'Bound key' }, { value = 'cross', label = 'Cross' },
           { value = 'mouse', label = 'Mouse' }, { value = 'dot', label = 'Dot' },
@@ -75,6 +75,10 @@ Designs.define {
       { key = 'counter', label = 'Position counter', type = 'boolean', default = false, group = 'Design',
         tier = 'advanced', affects = 'menu',
         help = 'Show the focused row number and the option count under the rail.' },
+      { key = 'collapsedPrompt', label = 'Collapsed submenu prompt', type = 'boolean', default = true, group = 'Design',
+        tier = 'basic', affects = 'menu',
+        help = 'For an entity whose only option opens a submenu (e.g. a fridge), show a single '
+          .. 'expand-key row with its label first instead of jumping straight to the submenu list.' },
 
       { key = 'scrim', label = 'Scrim', type = 'number', default = 38, min = 0, max = 100, step = 1, group = 'Surface', unit = '%',
         tier = 'basic', affects = 'menu',

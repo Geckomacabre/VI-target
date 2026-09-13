@@ -100,6 +100,8 @@ local function usingPad()
   return not IsInputDisabled(2)
 end
 
+Input.usingPad = usingPad
+
 ---Resolve a control declaration to the ids that apply to the current device.
 ---
 ---A plain id, or a list of them, is read on any device. A { kbm = ..., pad = ... }
@@ -213,4 +215,30 @@ end
 function Input.resendPrompts()
   if prompts.device == '' then return end
   Surfaces.broadcast('input', prompts)
+end
+
+--[[ ── Direct multi-key prompt (1-2 option entities) ───────────────────────
+  Each option showing at once in the direct prompt gets its own entry from
+  Config.Input.directOptionKeys, by position -- see that table's comment for
+  why this is keyboard-only and why a pad still falls back to the ordinary
+  shared focus+confirm cursor instead. Resolved the same way the shared
+  confirm/cancel prompt is: live GetControlInstructionalButton text, so the
+  design draws whatever the player actually has bound rather than a fixed
+  letter.
+]]
+
+---@param poolIndex number 1-based position of the option in the resolved list
+---@return string label live binding text, or '' when the pool has nothing at that position
+function Input.directKeyLabel(poolIndex)
+  local entry = Config.Input.directOptionKeys[poolIndex]
+  if not entry then return '' end
+  return labelFor(entry)
+end
+
+---@param poolIndex number
+---@return boolean pressed
+function Input.directKeyPressed(poolIndex)
+  local entry = Config.Input.directOptionKeys[poolIndex]
+  if not entry then return false end
+  return pressed(controlsFor(entry))
 end

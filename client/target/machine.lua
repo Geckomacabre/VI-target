@@ -13,6 +13,7 @@ local resolved = {}              -- Resolved options for active target
 local focus = 1
 local menuName = nil             -- Active submenu identifier
 local menuHistory = {}
+local menuMode = 'list'          -- 'list' | 'collapsed' | 'direct' -- see computeMode()
 
 local anchor                     -- World position where interface surface is anchored
 local stateSince = 0
@@ -71,13 +72,53 @@ end
 
 function Machine.isDisabled() return disabled end
 
+---Decide which of the design's three prompt shapes the current option list
+---calls for:
+---  - 'collapsed' - one option that itself opens a submenu (e.g. a "Fridge"
+---    entry leading to its own drink list): a single expand-key row stands in
+---    for the list until the player presses it, per the tunable below.
+---  - 'direct' - 1-2 options that are not that single-submenu-opener case
+---    (e.g. a car door's "Slim Jim" / "Smash Window"): every option shown at
+---    once, each independently keyed.
+---  - 'list' - 3+ options, or fewer with the collapsed prompt disabled: the
+---    ordinary scrolling rail.
+---@return 'list' | 'collapsed' | 'direct'
+local function computeMode()
+  local count = #resolved
+  if count == 0 then return 'list' end
+
+  local singleSubmenu = count == 1 and resolved[1].option.openMenu ~= nil
+
+  if singleSubmenu then
+    local tunables = Appearance.tunables or {}
+    local enabled = tunables.collapsedPrompt
+    if enabled == nil or enabled == true then return 'collapsed' end
+    return 'direct'
+  end
+
+  if count <= 2 then return 'direct' end
+  return 'list'
+end
+
 local function sendMenu()
+  menuMode = computeMode()
+
+  local payload = Resolver.toPayload(resolved)
+
+  if menuMode == 'direct' then
+    for i = 1, #payload do
+      payload[i].directKey = Input.directKeyLabel(i)
+    end
+  end
+
   Surfaces.send('menu', 'menu:open', {
-    options = Resolver.toPayload(resolved),
+    options = payload,
     focus = focus,
     menu = menuName,
     empty = #resolved == 0,
     emptyLabel = Locale('no_options'),
+    mode = menuMode,
+    collapseLabel = menuMode == 'collapsed' and resolved[1].option.label or nil,
   })
 end
 
@@ -651,10 +692,33 @@ function Machine.start()
       drawTick()
 
       if state == MENU_OPEN then
+        -- The shared scroll+confirm cursor always still works, in every mode:
+        -- it is the only way a pad player reaches a 'direct' prompt's second
+        -- option (see Config.Input.directOptionKeys), and it is exactly what
+        -- drives a 'collapsed' prompt already, since that mode is always
+        -- exactly one focusable option -- confirming it is what expands the
+        -- submenu into the ordinary list.
         local delta = Input.scrollDelta()
         if delta ~= 0 then moveFocus(delta) end
         if Input.confirmPressed() then confirm() end
         if Input.cancelPressed() then Machine.cancel() end
+
+        -- 'direct' additionally answers to each option's own dedicated key,
+        -- independently of the shared cursor above, so every option really is
+        -- simultaneously pressable rather than needing to be scrolled onto
+        -- first.
+        if menuMode == 'direct' then
+          for i = 1, #resolved do
+            if Input.directKeyPressed(i) then
+              if i ~= focus then
+                focus = i
+                sendFocus()
+              end
+              confirm()
+              break
+            end
+          end
+        end
       elseif state == SWEEPING then
         if Input.cancelPressed() then Machine.abort() end
       end

@@ -38,6 +38,7 @@ export type {
   IndicatorViewProps,
   InputDevice,
   InputPrompts,
+  MenuMode,
   MenuViewProps,
   OptionBadge,
   Preferences,
