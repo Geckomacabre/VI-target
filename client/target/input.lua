@@ -154,6 +154,14 @@ function Input.cancelPressed()
   return pressed(controlsFor(Config.Input.cancel))
 end
 
+---Check the part toggle (Config.Input.cyclePart). Optional, so a config that
+---drops it simply never cycles.
+function Input.cyclePartPressed()
+  local entry = Config.Input.cyclePart
+  if not entry then return false end
+  return pressed(controlsFor(entry))
+end
+
 --[[ ── Live button prompts ──────────────────────────────────────────────────
   What the player actually has to press, resolved from the live binding rather
   than drawn as a fixed glyph, and re-resolved when they change device.

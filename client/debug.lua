@@ -90,8 +90,18 @@ function Debug.explain()
     for j = 1, #zoneCandidates do candidates[#candidates + 1] = zoneCandidates[j] end
   end
 
-  print(('^5[osm-target] hit entity=%s type=%s model=%s distance=%.2f candidates=%d^7')
-    :format(scan.entity, scan.entityType, tostring(scan.model), scan.distance, #candidates))
+  -- Archetype name turns an anonymous model hash into the prop's actual name,
+  -- which is the difference between "1337214862" and "prop_atm_01" when the
+  -- question is what to write addModel against.
+  local archetype
+  if scan.entity and scan.entity ~= 0 then
+    local ok, name = pcall(GetEntityArchetypeName, scan.entity)
+    if ok and type(name) == 'string' and name ~= '' then archetype = name end
+  end
+
+  print(('^5[osm-target] hit entity=%s type=%s model=%s%s distance=%.2f candidates=%d^7')
+    :format(scan.entity, scan.entityType, tostring(scan.model),
+      archetype and (' (' .. archetype .. ')') or '', scan.distance, #candidates))
 
   if #candidates == 0 then
     print('^3  nothing is registered for this target^7')
@@ -105,7 +115,8 @@ function Debug.explain()
 
     local colour = verdict == Resolver.OK and '^2' or verdict == Resolver.GATED and '^3' or '^9'
     print(('%s  [%s] %s  (%s)%s%s^7'):format(
-      colour, verdict, option.label or '?', option.resource or '?',
+      colour, verdict, Resolver.label(option, context, candidate.distance or scan.distance) or '?',
+      option.resource or '?',
       reason and '  reason: ' or '', reason or ''))
   end
 end

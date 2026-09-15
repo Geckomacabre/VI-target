@@ -1,5 +1,10 @@
 local Designs = OsmTargetDesigns
 
+-- Surfaced on the server console as well as each client's, because the server
+-- owner is the one who can actually fix an out-of-date ox_lib. See
+-- client/main.lua for why this is a hard requirement rather than a warning.
+lib.checkDependency('ox_lib', '3.30.0', true)
+
 local function denied(source)
   Bridge.Notify(source, Locale('admin_no_perm'), 'error')
 end

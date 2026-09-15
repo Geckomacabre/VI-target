@@ -1,3 +1,5 @@
+local Schema = OsmTargetSchema
+
 local DIALECT = 'ox'
 
 Api = {}
@@ -23,6 +25,16 @@ local function ctxFor(distance)
   return { resource = GetInvokingResource() or GetCurrentResourceName(), distance = distance }
 end
 
+---Zones created with `debug = true` draw their outline permanently, for every
+---player. It is the single most common thing left switched on by accident when
+---a resource ships, and nothing else ever mentions it.
+local function warnZoneDebug(data, ctx)
+  if data.debug then
+    Schema.warn(("%s created a zone with debug drawing enabled.")
+      :format(ctx.resource or 'unknown'))
+  end
+end
+
 local function zoneCtx(data)
   return {
     resource = data.resource or GetInvokingResource() or GetCurrentResourceName(),
@@ -32,6 +44,7 @@ end
 
 function api.addBoxZone(data)
   local ctx = zoneCtx(data)
+  warnZoneDebug(data, ctx)
   local options = data.options
   data.options = nil
   return Store.attachZone(lib.zones.box(data), options, DIALECT, ctx).id
@@ -39,6 +52,7 @@ end
 
 function api.addSphereZone(data)
   local ctx = zoneCtx(data)
+  warnZoneDebug(data, ctx)
   local options = data.options
   data.options = nil
   return Store.attachZone(lib.zones.sphere(data), options, DIALECT, ctx).id
@@ -46,6 +60,7 @@ end
 
 function api.addPolyZone(data)
   local ctx = zoneCtx(data)
+  warnZoneDebug(data, ctx)
   local options = data.options
   data.options = nil
   return Store.attachZone(lib.zones.poly(data), options, DIALECT, ctx).id

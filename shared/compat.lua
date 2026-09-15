@@ -4,7 +4,7 @@ local Compat = {}
 
 ---Wrap legacy canInteract predicate: adapt legacy (entity, distance, option) parameters to internal resolver.
 local function wrapLegacyCanInteract(fn, option)
-  if type(fn) ~= 'function' then return nil end
+  if not Schema.callable(fn) then return nil end
   return function(entity, distance, _coords, _name, _bone)
     local ok, reason = fn(entity, distance, option)
     return ok, reason
@@ -101,7 +101,7 @@ function Compat.fromOx(v, ctx)
   local option = {
     label = v.label,
     description = v.description,
-    name = v.name or v.label,
+    name = v.name or (type(v.label) == 'string' and v.label or nil),
     icon = v.icon,
     iconColor = v.iconColor or v.iconColour,
     badges = v.badges,
@@ -146,7 +146,7 @@ function Compat.fromQb(v, ctx)
   local option = {
     label = v.label,
     description = v.description,
-    name = v.name or v.label,
+    name = v.name or (type(v.label) == 'string' and v.label or nil),
     icon = v.icon,
     iconColor = v.iconColor or v.iconColour,
     distance = clampDistance(v.distance, ctx.distance),
@@ -179,7 +179,7 @@ function Compat.fromQb(v, ctx)
   option.canInteract = wrapLegacyCanInteract(v.canInteract, v)
 
   -- Map action callback: preserve legacy raw entity parameter passing
-  if type(v.action) == 'function' then
+  if Schema.callable(v.action) then
     option.onSelect = v.action
   end
 
@@ -206,7 +206,7 @@ function Compat.fromQtarget(v, ctx)
   local option = {
     label = v.label,
     description = v.description,
-    name = v.name or v.label,
+    name = v.name or (type(v.label) == 'string' and v.label or nil),
     icon = v.icon,
     iconColor = v.iconColor or v.iconColour,
     distance = clampDistance(v.distance, ctx.distance),
@@ -237,7 +237,7 @@ function Compat.fromQtarget(v, ctx)
 
   option.canInteract = wrapLegacyCanInteract(v.canInteract, v)
 
-  if type(v.action) == 'function' then
+  if Schema.callable(v.action) then
     option.onSelect = v.action
   end
 

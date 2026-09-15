@@ -289,6 +289,41 @@ local function unpackCandidate(candidate, ctx)
   return candidate, ctx.distance or 0
 end
 
+---Resolve a presentation field that may be computed from the target rather
+---than fixed when the option was registered.
+---
+---Some text simply cannot be decided up front: the same lid is an engine cover
+---on one car and a luggage compartment on the next, and a door reads "Lock" or
+---"Unlock" depending on what it is doing right now. A plain string is returned
+---untouched, so nothing about existing options changes; a function is called
+---with the same arguments `canInteract` receives, so one closure can serve
+---both.
+---
+---Failure is never fatal: a field that errors or returns something unusable
+---resolves to nil and the caller decides what that means.
+---@return string?
+local function dynamicText(value, option, ctx, distance)
+  if not Schema.callable(value) then return value end
+
+  ctx = ctx or EMPTY
+  local ok, text = pcall(value, ctx.entity, distance, ctx.coords, option.name)
+  if not ok then return nil end
+
+  return (type(text) == 'string' and text ~= '') and text or nil
+end
+
+---Resolve an option's display text.
+---@return string? label nil when the option has nothing to show and should be hidden
+function Resolver.label(option, ctx, distance)
+  return dynamicText(option.label, option, ctx, distance)
+end
+
+---Resolve an option's icon, which swaps with the label when the label does.
+---@return string?
+function Resolver.icon(option, ctx, distance)
+  return dynamicText(option.icon, option, ctx, distance)
+end
+
 ---Resolve list of candidates into active option entries.
 ---@param candidates table[]
 ---@param ctx table
@@ -307,17 +342,26 @@ function Resolver.resolve(candidates, ctx)
       local verdict, reason, bone = Resolver.evaluate(option, ctx, distance)
 
       if verdict ~= Resolver.HIDDEN then
-        local enabled = verdict == Resolver.OK
-        out[#out + 1] = {
-          index = #out + 1,
-          option = option,
-          ref = candidate,
-          enabled = enabled,
-          reason = reason,
-          focusable = enabled or focusDisabled,
-          bone = bone,
-          distance = distance,
-        }
+        local label = Resolver.label(option, ctx, distance)
+        local icon = Resolver.icon(option, ctx, distance)
+
+        -- A callable label that declines to produce text means "nothing to say
+        -- about this target", which is the same thing as not being here.
+        if label then
+          local enabled = verdict == Resolver.OK
+          out[#out + 1] = {
+            index = #out + 1,
+            option = option,
+            ref = candidate,
+            enabled = enabled,
+            reason = reason,
+            focusable = enabled or focusDisabled,
+            bone = bone,
+            distance = distance,
+            label = label,
+            icon = icon,
+          }
+        end
       end
     end
   end
@@ -372,9 +416,11 @@ function Resolver.toPayload(resolved)
     local option = entry.option
     payload[i] = {
       id = i,
-      label = option.label,
+      -- entry.label / entry.icon are the resolved values; the option's own
+      -- fields may be functions of the target (see Resolver.label).
+      label = entry.label or option.label,
       description = option.description,
-      icon = option.icon,
+      icon = entry.icon or option.icon,
       iconColor = option.iconColor,
       badges = option.badges,
       enabled = entry.enabled,

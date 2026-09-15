@@ -19,6 +19,12 @@ Adapter = {
   GetGroupLabel = function(_name) return nil end,
   ---@return string? display label for an item name
   GetItemLabel = function(_name) return nil end,
+  ---Whether the player's character is actually in the world and playable.
+  ---Default is permissive on purpose: an adapter that has no reliable signal
+  ---must not lock targeting out forever, so only adapters that can genuinely
+  ---answer this override it.
+  ---@return boolean
+  IsPlayerLoaded = function() return true end,
   ---@param message string
   ---@param kind 'inform'|'success'|'error'|'warning'
   Notify = function(_message, _kind) end,
@@ -77,6 +83,15 @@ function Bridge.GetGangs()       return Adapter.GetGangs() or {} end
 function Bridge.GetCitizenId()   return Adapter.GetCitizenId() end
 function Bridge.GetJobType()     return Adapter.GetJobType() end
 function Bridge.GetGroupLabel(n) return Adapter.GetGroupLabel(n) end
+
+---Whether targeting should be allowed at all yet. Never lets an adapter fault
+---wedge the player out of interacting: anything other than an explicit `false`
+---is treated as loaded.
+function Bridge.IsPlayerLoaded()
+  local ok, loaded = pcall(Adapter.IsPlayerLoaded)
+  if not ok then return true end
+  return loaded ~= false
+end
 
 ---Dispatch notification: route message to active framework notification handler.
 function Bridge.Notify(message, kind)

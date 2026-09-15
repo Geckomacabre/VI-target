@@ -97,6 +97,21 @@ Config.Input = {
     pad = { 187 },       -- D-pad / stick down (INPUT_FRONTEND_DOWN)
   },
 
+  -- Part toggle. When the crosshair is within reach of more than one part of
+  -- the same entity -- a car's driver door and its front tire sit well inside
+  -- the 2m bone tolerance of each other -- the menu shows only the part nearest
+  -- the crosshair (see Config.Parts) and this steps it to the next one.
+  --
+  -- Middle mouse because the wheel already walks the rows, and the obvious
+  -- keys are taken on this server: TAB opens ox_inventory (inventory:keys), Q
+  -- is vi_radio's wheel and parkour, Z is ox_lib's radial, E/G are the
+  -- direct-prompt keys below. D-pad right on a pad, next to the up/down that
+  -- already walk the rows.
+  cyclePart = {
+    kbm = { 348 },       -- Middle mouse (INPUT_MAP_POI)
+    pad = { 190 },       -- D-pad right (INPUT_FRONTEND_RIGHT)
+  },
+
   -- Direct multi-key prompt (1-2 option entities, e.g. a car door offering
   -- "Slim Jim" / "Smash Window"): each option in view gets its own entry from
   -- this pool, by position, so every option is its own independently and
@@ -198,8 +213,10 @@ Config.Input = {
     22,              -- Jump (physical X, shared with direct-prompt option 1)
     23,              -- Enter vehicle (physical Y, shared with direct-prompt option 2)
     24, 25,          -- Attack / aim
+    27,              -- Phone (physical middle mouse / d-pad up, shared with cyclePart and scrollUp)
     53,              -- Weapon special ability (physical Y)
     56,              -- Drop weapon (physical Y)
+    74,              -- Vehicle headlight (physical d-pad right, shared with cyclePart)
     75,              -- Exit vehicle (physical Y)
     81, 82, 83, 84,  -- Vehicle radio and weapon cycling
     99, 100,         -- Vehicle select next / prev weapon
@@ -220,6 +237,16 @@ Config.Interaction = {
   -- Raycast length: camera raycast range in meters
   raycastDistance = 12.0,
 
+  -- See-through targeting. When the crosshair ray stops on world geometry, run
+  -- a second entity-only pass that travels through glass, railings and fences,
+  -- and take that hit if the player has genuine line of sight to it. Lets a
+  -- player target a shopkeeper through a shop window or an ATM behind a
+  -- grille, without ever reaching through a solid wall.
+  --
+  -- The extra pass only runs on the frames the first one found no entity, so
+  -- looking at anything targetable costs exactly what it did before.
+  seeThrough = true,
+
   -- Scan rate: raycast interval in milliseconds while sweeping
   scanInterval = 50,
 
@@ -231,6 +258,38 @@ Config.Interaction = {
   -- Animation timings: open and close transition durations in milliseconds
   openTime = 220,
   closeTime = 160,
+}
+
+-- Entity parts: split one entity's options by the physical part they are
+-- anchored to, so looking at a car window does not also list the tire beside
+-- it. Only the part nearest the crosshair is shown, the menu follows the
+-- crosshair from part to part on the same entity, and Config.Input.cyclePart
+-- steps to the next part by hand. Options with no bone or offset show on every
+-- part.
+Config.Parts = {
+  enabled = true,
+
+  -- Metres another part must be nearer the crosshair than the one showing
+  -- before the menu moves to it, so a point between two parts does not flicker
+  hysteresis = 0.25,
+
+  -- Milliseconds between re-reading the crosshair while a menu is open
+  followInterval = 150,
+
+  -- Metres (entity-local) the crosshair must move from where the part toggle
+  -- was pressed before the menu goes back to following the crosshair
+  unpinDistance = 1.0,
+
+  -- Bones that are one part. Resources anchor to different bones on the same
+  -- door -- osm-target's own door option uses door_dside_f/seat_dside_f,
+  -- qbx_vehiclekeys' Smash Window door_dside_f/window_lf -- and without these
+  -- that one door would split into separate parts. Unlisted bones are a part each.
+  aliases = {
+    door_dside_f = 'dside_f', seat_dside_f = 'dside_f', window_lf = 'dside_f', handle_dside_f = 'dside_f',
+    door_pside_f = 'pside_f', seat_pside_f = 'pside_f', window_rf = 'pside_f', handle_pside_f = 'pside_f',
+    door_dside_r = 'dside_r', seat_dside_r = 'dside_r', window_lr = 'dside_r', handle_dside_r = 'dside_r',
+    door_pside_r = 'pside_r', seat_pside_r = 'pside_r', window_rr = 'pside_r', handle_pside_r = 'pside_r',
+  },
 }
 
 Config.Indicators = {

@@ -4,11 +4,16 @@ game 'gta5'
 lua54 'yes'
 use_experimental_fxv2_oal 'yes'
 
+-- Reject NUI callbacks that did not originate from this resource's own UI.
+-- Without it any other resource's NUI page can POST to https://osm-target/<cb>,
+-- which reaches saveConfig and importConfig among others.
+nui_callback_strict_mode 'true'
+
 name 'osm-target'
 author 'OsmFX Mods'
 description 'OSM Target - world-space DUI interaction system. Drop-in replacement for ox_target / qb-target / qtarget with multiple bespoke designs, explained disabled states, and a SQL-backed in-game admin panel.'
-version '1.0.1'
-repository 'https://github.com/OsmFX-Mods/osm-target'
+version '1.0.2'
+repository 'https://github.com/Geckomacabre/osm-target'
 
 ui_page 'html/index.html'
 

@@ -1,4 +1,5 @@
 local Compat = OsmTargetCompat
+local Schema = OsmTargetSchema
 
 Store = {}
 
@@ -18,7 +19,8 @@ Store.zones = {}
 Store.modelsVersion = 0
 
 ---Remove existing entries: replace existing registrations with matching names.
-local function removeNamed(bucket, names, resource)
+---@param warnReplace boolean? report the removal as an accidental overwrite
+local function removeNamed(bucket, names, resource, warnReplace)
   if not names or #names == 0 then return end
 
   local lookup = {}
@@ -27,8 +29,38 @@ local function removeNamed(bucket, names, resource)
   for i = #bucket, 1, -1 do
     local option = bucket[i]
     if option.resource == resource and option.name and lookup[option.name] then
+      -- Registering a name twice is how an option is deliberately updated, but
+      -- it is just as often two different features in one resource picking the
+      -- same name, where the second silently erases the first. Cheap to say,
+      -- and the alternative is an option that mysteriously does not exist.
+      if warnReplace then
+        Schema.warn(("%s re-registered target option '%s'; the previous one was replaced.")
+          :format(resource or 'unknown', option.name))
+      end
       table.remove(bucket, i)
     end
+  end
+end
+
+---Report registrations that silently went nowhere.
+---
+---Entries that are not tables, or that carry no label, are dropped during
+---normalisation. That is correct, but invisible: the registering resource sees
+---no error and its option simply never appears, which is miserable to debug
+---from the other side of an export. Say it once, at registration.
+local function audit(options, normalised, ctx)
+  local resource = ctx and ctx.resource or 'unknown'
+
+  if type(options) ~= 'table' then
+    Schema.warn(("%s registered target options of type '%s'; a table was expected.")
+      :format(resource, type(options)))
+    return
+  end
+
+  local dropped = #Compat.toArray(options) - #normalised
+  if dropped > 0 then
+    Schema.warn(("%s registered %d target option(s) with no label; they will never appear.")
+      :format(resource, dropped))
   end
 end
 
@@ -38,6 +70,7 @@ end
 ---@param ctx table { resource, distance, bones }
 function Store.add(bucket, options, dialect, ctx)
   local normalised = Compat.normalise(options, dialect, ctx)
+  audit(options, normalised, ctx)
   if #normalised == 0 then return end
 
   local names = {}
@@ -46,7 +79,7 @@ function Store.add(bucket, options, dialect, ctx)
     if option.name then names[#names + 1] = option.name end
   end
 
-  removeNamed(bucket, names, ctx.resource)
+  removeNamed(bucket, names, ctx.resource, true)
 
   for i = 1, #normalised do
     bucket[#bucket + 1] = normalised[i]

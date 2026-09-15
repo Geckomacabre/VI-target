@@ -1,4 +1,5 @@
 local Resolver = OsmTargetResolver
+local Schema = OsmTargetSchema
 
 Machine = {}
 
@@ -14,6 +15,16 @@ local focus = 1
 local menuName = nil             -- Active submenu identifier
 local menuHistory = {}
 local menuMode = 'list'          -- 'list' | 'collapsed' | 'direct' -- see computeMode()
+
+-- Entity parts (see Hit.parts): which physical part of the target the menu is
+-- showing, and whether the player chose it with the part toggle rather than it
+-- simply being nearest the crosshair.
+local parts = {}
+local partKey = nil              -- Part the menu should stay on
+local shownKey = nil             -- Part the menu is actually showing
+local partPinned = false         -- Chosen with Config.Input.cyclePart
+local pinOffset = nil            -- Entity-local hit point the toggle was pressed at
+local lastFollow = 0
 
 local anchor                     -- World position where interface surface is anchored
 local stateSince = 0
@@ -118,7 +129,8 @@ local function sendMenu()
     empty = #resolved == 0,
     emptyLabel = Locale('no_options'),
     mode = menuMode,
-    collapseLabel = menuMode == 'collapsed' and resolved[1].option.label or nil,
+    collapseLabel = menuMode == 'collapsed'
+      and (resolved[1].label or resolved[1].option.label) or nil,
   })
 end
 
@@ -165,9 +177,13 @@ local function buildResponse(option, forServer)
         and NetworkGetNetworkIdFromEntity(response.entity) or 0
     end
 
-    -- Strip function fields: prevent serialization errors when transmitting response to server
+    -- Strip callable fields: prevent serialization errors when transmitting
+    -- response to server. Custom option keys are forwarded verbatim (see
+    -- carryExtras), so a caller's own callback can be sitting in any field --
+    -- and a cross-resource one is a funcref *table*, which a plain
+    -- type(value) == 'function' test would wave straight through onto the wire.
     for key, value in pairs(response) do
-      if type(value) == 'function' then response[key] = nil end
+      if Schema.callable(value) then response[key] = nil end
     end
   end
 
@@ -217,14 +233,51 @@ local BACK_OPTION = {
   resource = 'osm-target',
 }
 
+---Pick which of the target's parts to show: the one the player toggled to
+---while it is still there, otherwise the one nearest the crosshair -- held
+---until another is nearer by Config.Parts.hysteresis, so a hit point sitting
+---between a door and a tire does not flip the menu on every revalidation.
+local function choosePart()
+  if #parts < 2 then return parts[1] end
+
+  local current
+  for i = 1, #parts do
+    if parts[i].key == partKey then
+      current = parts[i]
+      break
+    end
+  end
+
+  if current and partPinned then return current end
+  partPinned = false
+
+  local nearest = parts[1]
+  if current and current ~= nearest
+    and nearest.distance + (Config.Parts.hysteresis or 0.0) >= current.distance
+  then
+    return current
+  end
+
+  partKey = nearest.key
+  return nearest
+end
+
 ---Resolve target options: populate active options from precomputed candidate list.
 local function resolveTarget(preserveFocusName, precomputed)
   if not target then
-    resolved = {}
+    resolved, parts, shownKey = {}, {}, nil
     return
   end
 
-  resolved = precomputed or Hit.resolve(target, menuName)
+  parts = Hit.parts(target, precomputed or Hit.resolve(target, menuName))
+  local part = choosePart()
+  shownKey = part and part.key
+
+  -- Copied rather than aliased: the back row below is inserted into it.
+  resolved = {}
+  if part then
+    for i = 1, #part.entries do resolved[i] = part.entries[i] end
+  end
 
   if menuName then
     BACK_OPTION.label = Locale('go_back')
@@ -329,11 +382,17 @@ local function magnetise(candidate)
   menuName = nil
   menuHistory = {}
   releaseSince = nil
+  partKey, partPinned, pinOffset = nil, false, nil
 
   resolveTarget(nil, candidate.resolved)
   if #resolved == 0 then
     target = nil
     return
+  end
+
+  -- candidate.anchor was taken from the whole list; anchor on the part that won.
+  if target.entity and target.entity ~= 0 then
+    anchor = Hit.anchor(target, resolved)
   end
 
   setState(MAGNETISED)
@@ -344,6 +403,7 @@ end
 local function openMenu()
   setState(MENU_OPEN)
   lastRevalidate = GetGameTimer()
+  lastFollow = lastRevalidate
   sendMenu()
 end
 
@@ -369,6 +429,7 @@ local function release()
     target, anchor = nil, nil
     resolved = {}
     menuName, menuHistory = nil, {}
+    parts, partKey, shownKey, partPinned, pinOffset = {}, nil, nil, false, nil
 
     if requested then
       setState(SWEEPING)
@@ -387,6 +448,7 @@ function Machine.abort()
   state = IDLE
   target, anchor, resolved = nil, nil, {}
   menuName, menuHistory, releaseSince = nil, {}, nil
+  parts, partKey, shownKey, partPinned, pinOffset = {}, nil, nil, false, nil
   Machine.teardown()
 end
 
@@ -416,6 +478,80 @@ local function moveFocus(direction)
   focus = index
   sendFocus()
   Nui.sfx(resolved[focus].enabled and 'scroll' or 'reject')
+end
+
+---The part toggle: step the menu to the next part of the same entity (driver
+---door -> front tire -> ...) and keep it there while the crosshair stays about
+---where it was, instead of snapping back to whichever part is nearest.
+local function cyclePart()
+  if state ~= MENU_OPEN or not target then return end
+
+  -- Parts are split at the top level only: a submenu belongs to the part it
+  -- was opened from.
+  if menuName or #parts < 2 then
+    Nui.sfx('reject')
+    return
+  end
+
+  local index = 1
+  for i = 1, #parts do
+    if parts[i].key == shownKey then
+      index = i
+      break
+    end
+  end
+
+  partKey = parts[index % #parts + 1].key
+  partPinned = true
+  pinOffset = target.offset
+    or GetOffsetFromEntityGivenWorldCoords(target.entity, target.coords.x, target.coords.y, target.coords.z)
+
+  resolveTarget()
+  anchor = Hit.anchor(target, resolved)
+  sendMenu()
+  Nui.sfx('scroll')
+end
+
+---Move the open menu's hit point to where the crosshair is now on the same
+---entity, so looking from the door to the tire moves the menu with it instead
+---of it staying on wherever the first hit landed.
+---@return boolean refreshed options were re-resolved from the new hit
+local function followHit(scan)
+  if not scan.offset then return false end
+
+  -- A toggled part holds until the crosshair has clearly moved on from where
+  -- the toggle was pressed: the choice was about that spot, not the whole car.
+  if partPinned then
+    if not pinOffset or #(scan.offset - pinOffset) <= (Config.Parts.unpinDistance or 1.0) then
+      return false
+    end
+    partPinned = false
+  end
+
+  local list = Hit.resolve({
+    entity = target.entity, entityType = target.entityType, model = target.model,
+    coords = scan.coords, offset = scan.offset, distance = target.distance,
+  }, menuName)
+
+  -- Nothing at the new spot: keep what is showing, the same stickiness the
+  -- look-away grace in logicTick already gives the menu.
+  if #list == 0 then return false end
+
+  target.coords, target.offset = scan.coords, scan.offset
+
+  local focusName = resolved[focus] and resolved[focus].option.name
+  local beforeKey, beforeCount = shownKey, #resolved
+  resolveTarget(focusName, list)
+
+  if shownKey ~= beforeKey then
+    anchor = Hit.anchor(target, resolved)
+    sendMenu()
+    Nui.sfx('scroll')
+  elseif #resolved ~= beforeCount then
+    sendMenu()
+  end
+
+  return true
 end
 
 local function confirm()
@@ -459,6 +595,17 @@ local function confirm()
   end
 
   Nui.sfx('confirm')
+
+  -- End the session on execute, even if the key is still held: release() would
+  -- otherwise see `requested` still true and drop straight back to SWEEPING,
+  -- re-targeting on top of whatever the option just started. Matters most for
+  -- an option that opens its own minigame (a lockpick ring, a hacking panel) --
+  -- the rail would keep sweeping and re-confirming underneath it. The key has
+  -- to be released and pressed again, which is also what ox_target and
+  -- qb-target do. Cancelling, or looking away while still holding, is
+  -- unaffected and still returns to SWEEPING.
+  requested = false
+
   execute(option)
   release()
 end
@@ -470,6 +617,7 @@ local function blocked()
     or IsPlayerDead(cache.playerId)
     or IsCutsceneActive()
     or IsNuiFocused()
+    or not Bridge.IsPlayerLoaded()
     or (type(lib.progressActive) == 'function' and lib.progressActive())
 end
 
@@ -535,16 +683,27 @@ local function logicTick()
     end
 
     local angle = angleTo(origin, forward, anchor)
+    local onEntity = target.entity and target.entity ~= 0
+    local settings = Config.Parts
+
+    local follow = onEntity and settings and settings.enabled and menuName == nil
+      and now - lastFollow >= (settings.followInterval or 150)
+
+    -- One scan serves both part following and the look-away grace below.
+    local scan
+    if onEntity and (follow or angle > Config.Interaction.releaseAngle) then
+      local scanned = target
+      scan = Hit.scan()
+
+      -- Hit.scan yields a frame: the draw thread may have confirmed, cancelled
+      -- or toggled the part in the meantime.
+      if state ~= MENU_OPEN or target ~= scanned then return end
+      now = GetGameTimer()
+    end
+
+    local lookingAtTarget = scan ~= nil and scan.entity == target.entity
 
     if angle > Config.Interaction.releaseAngle then
-      local lookingAtTarget = false
-      if target.entity and target.entity ~= 0 then
-        local scan = Hit.scan()
-        if scan and scan.entity == target.entity then
-          lookingAtTarget = true
-        end
-      end
-
       if lookingAtTarget then
         releaseSince = nil
       else
@@ -558,16 +717,23 @@ local function logicTick()
       releaseSince = nil
     end
 
+    if follow then
+      lastFollow = now
+      if lookingAtTarget and followHit(scan) then
+        lastRevalidate = now
+      end
+    end
+
     -- Periodically refresh options: revalidate gates while menu remains open
     if now - lastRevalidate >= 400 then
       lastRevalidate = now
       local focusName = resolved[focus] and resolved[focus].option.name
-      local before = #resolved
+      local before, beforeKey = #resolved, shownKey
       resolveTarget(focusName)
 
       if #resolved == 0 then
         release()
-      elseif #resolved ~= before then
+      elseif #resolved ~= before or shownKey ~= beforeKey then
         sendMenu()
       end
     end
@@ -701,6 +867,7 @@ function Machine.start()
         local delta = Input.scrollDelta()
         if delta ~= 0 then moveFocus(delta) end
         if Input.confirmPressed() then confirm() end
+        if Input.cyclePartPressed() then cyclePart() end
 
         -- Cancel is skipped here, not suppressed globally, when a direct-mode
         -- option's own key happens to double as the shared cancel button --

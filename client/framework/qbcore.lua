@@ -97,6 +97,14 @@ function Adapter.Notify(message, kind)
   QBCore.Functions.Notify(message, kind == 'inform' and 'primary' or kind)
 end
 
+---Character in-world state, as qbx_core/qb-core replicate it: the server sets
+---`isLoggedIn` on the player statebag at spawn and clears it on drop, so this
+---is false on the character-select and spawn screens where a target menu has
+---nothing to act on.
+function Adapter.IsPlayerLoaded()
+  return LocalPlayer.state.isLoggedIn == true
+end
+
 -- Invalidate cache helper: call latest InvalidatePlayerState reference
 local function invalidate() Bridge.InvalidatePlayerState() end
 

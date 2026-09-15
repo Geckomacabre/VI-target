@@ -1,6 +1,17 @@
+-- Hard dependency gate. osm-target is built on ox_lib's zones, raycast,
+-- keybind and progress APIs, none of which fail loudly on their own -- an
+-- ox_lib too old to provide them produces a resource that loads clean and then
+-- silently does nothing. Checked here rather than at the top of the file list
+-- because this is the script that registers the keybind: refusing to register
+-- it leaves the player with no targeting and one clear line in console, which
+-- is a far better failure than a dead key and no explanation.
+local DEPENDENCY, MIN_VERSION = 'ox_lib', '3.30.0'
+
 CreateThread(function()
   -- Initialize client state: wait for ox_lib point grid and cache readiness
   Wait(0)
+
+  if not lib.checkDependency(DEPENDENCY, MIN_VERSION, true) then return end
 
   Nui.loadPrefs()
   Input.register()
